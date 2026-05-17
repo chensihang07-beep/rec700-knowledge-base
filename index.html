@@ -484,7 +484,7 @@
 <div class="controls">
   <div class="search-wrap">
     <span class="search-icon">⌕</span>
-    <input type="text" id="search" placeholder="搜索作者、概念、关键词…" autocomplete="off">
+    <input type="text" id="search-input" placeholder="搜索作者、概念、关键词…" autocomplete="off">
   </div>
   <div class="filter-row">
     <span class="filter-label">主题</span>
@@ -1246,7 +1246,7 @@ const themeMap = {
 };
 
 const grid = document.getElementById('grid');
-const searchInput = document.getElementById('search');
+const searchInput = document.getElementById('search-input');
 const pills = document.querySelectorAll('.pill');
 const resultsText = document.getElementById('results-text');
 const totalCount = document.getElementById('total-count');
