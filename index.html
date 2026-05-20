@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REC 700 · 个人知识体系库</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600;700&family=Noto+Sans+SC:wght@300;400;500&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+:root{--bg:#0f0e0c;--bg2:#181714;--bg3:#201e1a;--border:#2e2b26;--amber:#c8953a;--amber-l:#e8b86d;--amber-d:#7a5820;--cream:#e8e0d0;--cream-d:#9a9080;--green:#3a7a4a;--blue:#3a5878;--red:#b85042;--purple:#6b5a8c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--cream);font-family:'Noto Sans SC',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--amber-d)}
+
+/* TOP NAV */
+.top-nav{display:flex;align-items:center;gap:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 56px;position:sticky;top:0;z-index:200}
+.nav-logo{font-family:'IM Fell English',serif;font-size:15px;color:var(--amber);margin-right:32px;white-space:nowrap;padding:14px 0}
+.nav-tab{padding:14px 20px;font-size:12px;font-family:'Noto Sans SC',sans-serif;font-weight:300;color:var(--cream-d);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none}
+.nav-tab:hover{color:var(--cream)}
+.nav-tab.active{color:var(--amber);border-bottom-color:var(--amber);font-weight:500}
+.tab-icon{margin-right:6px;font-size:13px}
+
+/* PANELS */
+.panel{display:none}.panel.active{display:block}
+
+/* ── KNOWLEDGE BASE ── */
+header{padding:40px 56px 28px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(200,149,58,.07) 0%,transparent 100%)}
+.eyebrow{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+.h-title{font-family:'IM Fell English',serif;font-size:clamp(28px,4vw,50px);line-height:1.05;color:var(--cream)}
+.h-title span{color:var(--amber)}
+.h-sub{margin-top:8px;font-size:13px;color:var(--cream-d);line-height:1.9}
+.stats-bar{display:flex;gap:0;margin-top:20px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.stat-item{flex:1;padding:12px 18px;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:3px}
+.stat-item:last-child{border-right:none}
+.stat-n{font-family:'IM Fell English',serif;font-size:24px;color:var(--amber);line-height:1}
+.stat-l{font-size:11px;color:var(--cream-d);letter-spacing:.5px}
+.progress-wrap{padding:12px 18px;flex:2;display:flex;flex-direction:column;gap:6px;justify-content:center}
+.progress-label{font-size:11px;color:var(--cream-d);display:flex;justify-content:space-between}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--amber-d),var(--amber));border-radius:2px;transition:width .5s ease}
+.controls{padding:16px 56px;position:sticky;top:46px;z-index:100;background:rgba(15,14,12,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.ctrl-row1{display:flex;gap:10px;margin-bottom:12px}
+.search-wrap{flex:1;position:relative}
+.search-wrap input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 14px 10px 40px;color:var(--cream);font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:300;outline:none;transition:border-color .2s}
+.search-wrap input::placeholder{color:var(--cream-d);opacity:.5}
+.search-wrap input:focus{border-color:var(--amber-d)}
+.search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--amber-d);font-size:14px;pointer-events:none}
+.ctrl-btn{padding:10px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream-d);font-size:12px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.ctrl-btn:hover{border-color:var(--amber-d);color:var(--amber-l)}
+.filter-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.filter-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber-d);margin-right:4px}
+.pill{padding:4px 13px;border-radius:100px;border:1px solid var(--border);font-size:11px;font-family:'Noto Sans SC',sans-serif;font-weight:300;cursor:pointer;transition:all .15s;background:transparent;color:var(--cream-d)}
+.pill:hover{border-color:var(--amber-d);color:var(--amber-l)}
+.pill.active{background:var(--amber);border-color:var(--amber);color:var(--bg);font-weight:500}
+.results-bar{padding:10px 56px 0;font-size:11px;color:var(--cream-d);letter-spacing:.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px;padding:16px 56px 80px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s,border-color .2s;animation:fadeUp .35s ease both}
+.card:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(0,0,0,.5);border-color:var(--amber-d)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card-top{height:3px;flex-shrink:0}
+.card-main{padding:20px 24px 14px;flex:1}
+.card-meta{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.card-author{font-family:'IM Fell English',serif;font-size:16px;color:var(--cream);line-height:1.2}
+.card-year{font-size:10px;color:var(--amber);letter-spacing:1px;margin-top:2px}
+.card-title-text{font-size:11.5px;color:var(--cream-d);margin-top:3px;line-height:1.5;font-style:italic}
+.status-badge{flex-shrink:0;padding:3px 9px;border-radius:100px;font-size:10px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid;user-select:none;white-space:nowrap}
+.status-0{border-color:#444;color:#666;background:transparent}
+.status-1{border-color:#7a5820;color:#c8953a;background:rgba(200,149,58,.1)}
+.status-2{border-color:#2a5a2a;color:#4a9a4a;background:rgba(74,154,74,.1)}
+.card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.tag{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500;letter-spacing:.3px}
+.card-summary{font-size:12.5px;line-height:1.85;color:var(--cream-d);margin-top:10px}
+mark{background:rgba(200,149,58,.25);color:var(--amber-l);border-radius:2px;padding:0 1px}
+.card-detail{display:none;padding:0 24px 20px;flex-direction:column;gap:14px}
+.card.open .card-detail{display:flex}
+.detail-sep{height:1px;background:var(--border)}
+.section-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber-d);margin-bottom:6px;font-weight:500}
+.keyargs-list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.keyargs-list li{font-size:12px;line-height:1.7;color:var(--cream-d);padding:7px 10px;background:rgba(255,255,255,.02);border-radius:5px;border-left:2px solid var(--amber-d)}
+.keyargs-list li b{color:var(--cream);font-weight:500;display:block;margin-bottom:2px}
+.q-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.q-list li{font-size:12px;line-height:1.7;color:var(--cream-d);padding:7px 10px;background:rgba(107,90,140,.06);border-radius:5px;border-left:2px solid #4a3a6a}
+.q-list li::before{content:"Q ";color:var(--purple);font-weight:500}
+.thinkers-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.thinker-tag{padding:3px 9px;border-radius:4px;font-size:11px;background:rgba(58,88,120,.15);border:1px solid rgba(58,88,120,.3);color:#7ab0d8}
+.method-box{font-size:12px;line-height:1.7;color:var(--cream-d);padding:8px 12px;background:rgba(58,122,74,.06);border-radius:5px;border-left:2px solid var(--green);font-style:italic}
+.related-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.related-tag{padding:3px 9px;border-radius:4px;font-size:11px;background:rgba(200,149,58,.08);border:1px solid rgba(200,149,58,.2);color:var(--amber-d);cursor:pointer;transition:all .15s}
+.related-tag:hover{background:rgba(200,149,58,.15);color:var(--amber)}
+.quotes-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.quote-item{border-left:3px solid rgba(200,149,58,.4);padding:8px 12px 8px 14px;background:rgba(200,149,58,.04);border-radius:0 5px 5px 0}
+.quote-text{font-size:12px;line-height:1.75;color:var(--cream-d);font-style:italic}
+.quote-src{font-size:10px;color:var(--amber-d);margin-top:4px;letter-spacing:.3px}
+.note-section textarea{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--cream);font-family:'Noto Sans SC',sans-serif;font-size:12px;font-weight:300;line-height:1.7;resize:vertical;min-height:80px;outline:none;transition:border-color .2s}
+.note-section textarea::placeholder{color:var(--cream-d);opacity:.4}
+.note-section textarea:focus{border-color:var(--amber-d)}
+.note-save-indicator{font-size:10px;color:var(--amber-d);margin-top:4px;height:14px;transition:opacity .3s}
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-top:1px solid var(--border)}
+.toggle-btn{background:none;border:none;color:var(--cream-d);font-size:11px;cursor:pointer;display:flex;align-items:center;gap:5px;padding:0;font-family:'Noto Sans SC',sans-serif;font-weight:300}
+.toggle-btn:hover{color:var(--amber)}
+.toggle-arrow{display:inline-block;transition:transform .22s;font-size:9px}
+.card.open .toggle-arrow{transform:rotate(180deg)}
+.bookmark-btn{background:none;border:none;cursor:pointer;font-size:14px;padding:0;color:var(--border);transition:color .15s}
+.bookmark-btn.active{color:var(--amber)}
+.grid.compact{grid-template-columns:1fr}
+.grid.compact .card{flex-direction:row;align-items:stretch}
+.grid.compact .card-top{width:3px;height:auto;flex-shrink:0}
+.grid.compact .card-main{padding:14px 18px}
+.grid.compact .card-summary{display:none}
+.grid.compact .card-detail{display:none!important}
+.tag-method{background:rgba(58,88,120,.25);color:#7ab0d8;border:1px solid rgba(58,88,120,.4)}
+.tag-indigenous{background:rgba(58,122,74,.25);color:#7ad890;border:1px solid rgba(58,122,74,.4)}
+.tag-positivism{background:rgba(122,88,32,.25);color:#d8b06a;border:1px solid rgba(122,88,32,.4)}
+.tag-phenomenology{background:rgba(58,122,114,.25);color:#7ad8d0;border:1px solid rgba(58,122,114,.4)}
+.tag-constructionism{background:rgba(88,88,88,.25);color:#b8b8b8;border:1px solid rgba(88,88,88,.4)}
+.tag-critical{background:rgba(184,80,66,.25);color:#e89080;border:1px solid rgba(184,80,66,.4)}
+.tag-feminist{background:rgba(184,80,130,.25);color:#e890b8;border:1px solid rgba(184,80,130,.4)}
+.tag-crt{background:rgba(140,74,90,.25);color:#e8a0b0;border:1px solid rgba(140,74,90,.4)}
+.tag-queer{background:rgba(107,90,140,.25);color:#c8a8e8;border:1px solid rgba(107,90,140,.4)}
+.tag-poststructural{background:rgba(90,74,122,.25);color:#b898e0;border:1px solid rgba(90,74,122,.4)}
+.tag-materialism{background:rgba(74,90,58,.25);color:#a8c878;border:1px solid rgba(74,90,58,.4)}
+.tag-tourism{background:rgba(58,106,106,.25);color:#78c8c8;border:1px solid rgba(58,106,106,.4)}
+.tag-leisure{background:rgba(106,80,58,.25);color:#d8a878;border:1px solid rgba(106,80,58,.4)}
+.tag-neuro{background:rgba(74,140,90,.25);color:#98d8a8;border:1px solid rgba(74,140,90,.4)}
+.top-method{background:linear-gradient(90deg,#3a5878,#2a4058)}
+.top-indigenous{background:linear-gradient(90deg,#3a7a4a,#2a5232)}
+.top-positivism{background:linear-gradient(90deg,#7a5820,#4a3210)}
+.top-phenomenology{background:linear-gradient(90deg,#3a7a72,#1e3d3a)}
+.top-constructionism{background:linear-gradient(90deg,#585858,#383838)}
+.top-critical{background:linear-gradient(90deg,#b85042,#6a2018)}
+.top-feminist{background:linear-gradient(90deg,#b85082,#6a1840)}
+.top-crt{background:linear-gradient(90deg,#8c4a5a,#5a2a38)}
+.top-queer{background:linear-gradient(90deg,#6b5a8c,#3d2e5a)}
+.top-poststructural{background:linear-gradient(90deg,#5a4a7a,#2a1e42)}
+.top-materialism{background:linear-gradient(90deg,#4a5a3a,#2a3220)}
+.top-tourism{background:linear-gradient(90deg,#3a6a6a,#1e3838)}
+.top-leisure{background:linear-gradient(90deg,#6a503a,#3a2e1a)}
+.top-neuro{background:linear-gradient(90deg,#4a8a5a,#2a4232)}
+
+/* ── COMPARE MODE ── */
+.compare-toggle{padding:10px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--cream-d);font-size:12px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.compare-toggle:hover,.compare-toggle.on{border-color:var(--amber);color:var(--amber)}
+.card-check{position:absolute;top:10px;right:10px;display:none;z-index:10}
+.card.compare-mode .card-check{display:block}
+.card.compare-mode{position:relative;cursor:pointer}
+.card.compare-mode.selected{border-color:var(--amber)!important;box-shadow:0 0 0 2px rgba(200,149,58,.3)}
+.card-check input{width:16px;height:16px;accent-color:var(--amber);cursor:pointer}
+
+/* ── COMPARISON DOCK ── */
+.compare-dock{position:fixed;bottom:0;left:0;right:0;background:rgba(15,14,12,.97);border-top:1px solid var(--amber-d);backdrop-filter:blur(12px);padding:12px 56px;display:flex;align-items:center;gap:14px;z-index:300;transform:translateY(100%);transition:transform .25s ease}
+.compare-dock.visible{transform:translateY(0)}
+.compare-dock-label{font-size:12px;color:var(--amber);white-space:nowrap}
+.compare-chips{display:flex;gap:8px;flex:1;flex-wrap:wrap}
+.compare-chip{padding:4px 10px;background:rgba(200,149,58,.12);border:1px solid var(--amber-d);border-radius:20px;font-size:11px;color:var(--amber-l);display:flex;align-items:center;gap:6px}
+.compare-chip button{background:none;border:none;color:var(--amber-d);cursor:pointer;font-size:13px;line-height:1;padding:0}
+.dock-btn{padding:9px 18px;border-radius:6px;font-size:12px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;white-space:nowrap;transition:all .15s}
+.dock-btn.primary{background:var(--amber);border:none;color:var(--bg);font-weight:500}
+.dock-btn.primary:hover{background:var(--amber-l)}
+.dock-btn.secondary{background:var(--bg3);border:1px solid var(--border);color:var(--cream-d)}
+.dock-btn.secondary:hover{border-color:var(--amber-d);color:var(--amber-l)}
+
+/* ── COMPARE PANEL (full screen overlay) ── */
+.compare-overlay{position:fixed;inset:0;background:var(--bg);z-index:400;display:none;flex-direction:column}
+.compare-overlay.open{display:flex}
+.compare-overlay-head{padding:16px 32px;border-bottom:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:16px}
+.compare-overlay-head h2{font-family:'IM Fell English',serif;font-size:20px;color:var(--cream);flex:1}
+.compare-close{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--cream-d);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.compare-close:hover{border-color:var(--amber-d);color:var(--amber)}
+.compare-body{flex:1;display:flex;overflow:hidden}
+.compare-cols{flex:1;overflow-x:auto;display:flex;gap:0;padding:24px}
+.compare-col{min-width:320px;max-width:380px;flex-shrink:0;background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-right:16px;display:flex;flex-direction:column}
+.compare-col-head{padding:16px 18px 12px;border-bottom:1px solid var(--border)}
+.compare-col-author{font-family:'IM Fell English',serif;font-size:15px;color:var(--cream)}
+.compare-col-year{font-size:10px;color:var(--amber);letter-spacing:1px}
+.compare-col-body{padding:16px 18px;overflow-y:auto;flex:1;font-size:12px;line-height:1.8;color:var(--cream-d)}
+.compare-col-section{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber-d);margin:12px 0 6px}
+.compare-col-arg{padding:6px 10px;background:rgba(255,255,255,.03);border-radius:4px;border-left:2px solid var(--amber-d);margin-bottom:6px}
+.compare-col-arg b{display:block;color:var(--cream);margin-bottom:2px}
+.compare-ai-panel{width:360px;flex-shrink:0;border-left:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg3)}
+.compare-ai-head{padding:14px 18px;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--amber-d)}
+.compare-ai-templates{padding:14px 18px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--border)}
+.compare-ai-tpl{padding:8px 12px;border-radius:6px;font-size:11.5px;color:var(--cream-d);cursor:pointer;border:1px solid var(--border);background:var(--bg2);line-height:1.5;transition:all .15s}
+.compare-ai-tpl:hover{border-color:var(--amber-d);color:var(--amber-l)}
+.compare-ai-messages{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.compare-ai-msg{font-size:12px;line-height:1.75;padding:10px 12px;border-radius:8px}
+.compare-ai-msg.user{background:rgba(107,90,140,.15);border:1px solid rgba(107,90,140,.3);color:var(--cream)}
+.compare-ai-msg.bot{background:var(--bg2);border:1px solid var(--border);color:var(--cream-d)}
+.compare-ai-bar{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px}
+.compare-ai-bar input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--cream);font-family:'Noto Sans SC',sans-serif;font-size:12px;outline:none}
+.compare-ai-bar input:focus{border-color:var(--amber-d)}
+.compare-ai-bar button{padding:8px 14px;background:var(--amber-d);border:none;border-radius:6px;color:var(--bg);font-size:12px;cursor:pointer}
+.compare-ai-bar button:hover{background:var(--amber)}
+
+/* ── TENSION MATRIX ── */
+.tension-toggle-bar{display:flex;gap:10px;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.tension-toggle-btn{padding:6px 14px;border-radius:6px;font-size:11px;font-family:'Noto Sans SC',sans-serif;cursor:pointer;border:1px solid var(--border);color:var(--cream-d);background:var(--bg3);transition:all .15s}
+.tension-toggle-btn.active{border-color:var(--amber);color:var(--amber);background:rgba(200,149,58,.08)}
+.tension-panel{display:none;flex:1;overflow:auto;padding:24px}
+.tension-panel.active{display:block}
+#tension-tab .map-container{display:none}
+#tension-tab .map-container.active{display:block}
+.tension-section{margin-bottom:32px}
+.tension-section-title{font-family:'IM Fell English',serif;font-size:18px;color:var(--amber);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.tension-thread{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px}
+.tension-thread-title{font-size:13px;font-weight:500;color:var(--cream);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.tension-badge{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500}
+.badge-critique{background:rgba(184,80,66,.2);color:#e89080;border:1px solid rgba(184,80,66,.3)}
+.badge-builds{background:rgba(58,122,74,.2);color:#7ad890;border:1px solid rgba(58,122,74,.3)}
+.badge-tension{background:rgba(107,90,140,.2);color:#c8a8e8;border:1px solid rgba(107,90,140,.3)}
+.badge-dialogue{background:rgba(58,88,120,.2);color:#7ab0d8;border:1px solid rgba(58,88,120,.3)}
+.tension-nodes{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.tension-node{padding:4px 10px;border-radius:6px;font-size:11px;color:var(--cream-d);border:1px solid var(--border);background:var(--bg3)}
+.tension-node.from{border-color:rgba(184,80,66,.4);color:#e89080}
+.tension-node.to{border-color:rgba(58,122,74,.4);color:#7ad890}
+.tension-node.both{border-color:var(--amber-d);color:var(--amber-l)}
+.tension-desc{font-size:12px;line-height:1.75;color:var(--cream-d)}
+.tension-quote{margin-top:8px;padding:6px 12px;border-left:2px solid rgba(200,149,58,.4);font-size:11.5px;color:var(--cream-d);font-style:italic}
+.question-matrix{width:100%;border-collapse:collapse;font-size:11.5px}
+.question-matrix th{padding:10px 14px;background:var(--bg3);border:1px solid var(--border);color:var(--amber-d);text-align:left;font-weight:500;font-size:10px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.question-matrix td{padding:9px 14px;border:1px solid var(--border);color:var(--cream-d);vertical-align:top;line-height:1.6}
+.question-matrix tr:hover td{background:rgba(255,255,255,.02)}
+.qm-author{font-weight:500;color:var(--cream);font-size:12px;white-space:nowrap}
+.qm-pos{font-size:11px}
+.qm-pos.agree{color:#7ad890}.qm-pos.critique{color:#e89080}.qm-pos.nuance{color:#c8a8e8}.qm-pos.extend{color:#7ab0d8}
+
+.empty{grid-column:1/-1;text-align:center;padding:80px 0;color:var(--cream-d)}
+.empty-icon{font-size:40px;margin-bottom:16px;opacity:.3}
+
+/* ── CONCEPT MAP ── */
+.map-panel{height:calc(100vh - 46px);display:flex;flex-direction:column;background:var(--bg)}
+.map-toolbar{display:flex;gap:12px;align-items:center;padding:12px 24px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.map-hint{font-size:11px;color:var(--cream-d);margin-left:auto}
+.map-container{flex:1;position:relative;overflow:hidden}
+#mapSvg{width:100%;height:100%}
+.map-tooltip{position:absolute;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;max-width:260px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:100}
+.map-tooltip-author{font-family:'IM Fell English',serif;font-size:14px;color:var(--cream);margin-bottom:4px}
+.map-tooltip-summary{font-size:11px;color:var(--cream-d);line-height:1.6}
+.map-legend{position:absolute;bottom:20px;left:20px;background:rgba(15,14,12,.9);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--cream-d)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── AI Q&A ── */
+.ai-panel{height:calc(100vh - 46px);display:flex;gap:0}
+.ai-sidebar{width:280px;flex-shrink:0;border-right:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:12px;background:var(--bg2);overflow-y:auto}
+.ai-sidebar-title{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--amber-d)}
+.ai-suggestion{padding:8px 12px;border-radius:6px;font-size:11.5px;color:var(--cream-d);cursor:pointer;border:1px solid var(--border);background:var(--bg3);line-height:1.5;transition:all .15s}
+.ai-suggestion:hover{border-color:var(--amber-d);color:var(--amber-l)}
+.ai-main{flex:1;display:flex;flex-direction:column;min-width:0}
+.ai-messages{flex:1;overflow-y:auto;padding:24px 32px;display:flex;flex-direction:column;gap:16px}
+.ai-msg{display:flex;gap:12px;animation:fadeUp .2s ease both}
+.ai-msg.user{flex-direction:row-reverse}
+.ai-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+.ai-avatar.bot{background:rgba(200,149,58,.15);border:1px solid var(--amber-d);color:var(--amber)}
+.ai-avatar.user{background:rgba(107,90,140,.2);border:1px solid var(--purple);color:#c8a8e8}
+.ai-bubble{max-width:76%;padding:12px 16px;border-radius:10px;font-size:12.5px;line-height:1.8}
+.ai-bubble.bot{background:var(--bg3);border:1px solid var(--border);color:var(--cream-d)}
+.ai-bubble.user{background:rgba(107,90,140,.15);border:1px solid rgba(107,90,140,.3);color:var(--cream);text-align:right}
+.ai-bubble cite{display:block;margin-top:8px;font-size:11px;color:var(--amber-d);font-style:italic;border-top:1px solid var(--border);padding-top:6px}
+.ai-typing{display:flex;gap:4px;padding:4px 0}
+.ai-typing span{width:6px;height:6px;border-radius:50%;background:var(--amber-d);animation:bounce 1.2s infinite}
+.ai-typing span:nth-child(2){animation-delay:.2s}
+.ai-typing span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.ai-input-bar{padding:16px 32px;border-top:1px solid var(--border);background:var(--bg2);display:flex;gap:10px;align-items:flex-end}
+.ai-input-bar textarea{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--cream);font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:300;line-height:1.5;resize:none;min-height:44px;max-height:120px;outline:none;transition:border-color .2s}
+.ai-input-bar textarea::placeholder{color:var(--cream-d);opacity:.5}
+.ai-input-bar textarea:focus{border-color:var(--amber-d)}
+.ai-send-btn{width:44px;height:44px;border-radius:8px;background:var(--amber-d);border:none;color:var(--bg);font-size:16px;cursor:pointer;transition:background .15s;flex-shrink:0}
+.ai-send-btn:hover{background:var(--amber)}
+.ai-send-btn:disabled{opacity:.4;cursor:not-allowed}
+.ai-welcome{text-align:center;padding:60px 40px;color:var(--cream-d)}
+.ai-welcome-icon{font-size:48px;margin-bottom:16px;opacity:.4}
+.ai-welcome h3{font-family:'IM Fell English',serif;font-size:20px;color:var(--cream);margin-bottom:8px}
+.ai-welcome p{font-size:13px;line-height:1.8}
+
+/* ── FLASHCARD ── */
+.fc-panel{padding:40px 56px 80px;min-height:calc(100vh - 46px);background:var(--bg)}
+.fc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+.fc-header h2{font-family:'IM Fell English',serif;font-size:24px;color:var(--cream)}
+.fc-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fc-meta{font-size:12px;color:var(--cream-d);margin-bottom:24px}
+.fc-stage{perspective:1000px;max-width:740px;margin:0 auto 32px}
+.fc-card-wrap{height:400px;cursor:pointer;position:relative}
+.fc-card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.fc-card-wrap.flipped .fc-card-inner{transform:rotateY(180deg)}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;border:1px solid var(--border);display:flex;flex-direction:column;padding:40px;overflow:hidden}
+.fc-front{background:var(--bg2)}
+.fc-back{background:var(--bg3);transform:rotateY(180deg)}
+.fc-face-accent{position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0}
+.fc-author{font-family:'IM Fell English',serif;font-size:28px;color:var(--cream);margin-top:8px}
+.fc-year-badge{font-size:11px;color:var(--amber);letter-spacing:2px;margin-top:4px}
+.fc-title{font-size:13px;color:var(--cream-d);margin-top:10px;line-height:1.6;font-style:italic;flex:1}
+.fc-front-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+.fc-flip-hint{font-size:11px;color:var(--amber-d);text-align:center;margin-top:4px;letter-spacing:1px}
+.fc-back-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--amber-d);margin-bottom:14px}
+.fc-core-arg{font-size:13.5px;color:var(--cream);line-height:1.75;font-weight:500;margin-bottom:12px}
+.fc-core-exp{font-size:12.5px;color:var(--cream-d);line-height:1.75}
+.fc-quote-strip{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);font-size:11.5px;color:var(--cream-d);font-style:italic;line-height:1.6}
+.fc-quote-src{font-size:10px;color:var(--amber-d);margin-top:4px}
+.fc-nav{display:flex;align-items:center;justify-content:center;gap:20px;max-width:740px;margin:0 auto}
+.fc-nav-btn{width:48px;height:48px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--cream-d);font-size:20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.fc-nav-btn:hover{border-color:var(--amber);color:var(--amber)}
+.fc-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.fc-progress-track{flex:1;max-width:300px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.fc-progress-inner{height:100%;background:var(--amber);border-radius:2px;transition:width .3s}
+.fc-counter{font-size:12px;color:var(--cream-d);white-space:nowrap;min-width:60px;text-align:center}
+.fc-mastered-bar{display:flex;gap:8px;flex-wrap:wrap;max-width:740px;margin:24px auto 0;justify-content:center}
+.fc-dot{width:10px;height:10px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);cursor:pointer;transition:background .15s}
+.fc-dot.seen{border-color:var(--amber-d);background:rgba(200,149,58,.3)}
+.fc-dot.mastered{border-color:#4a9a4a;background:rgba(74,154,74,.4)}
+.fc-theme-filter{display:flex;flex-wrap:wrap;gap:6px;max-width:740px;margin:0 auto 24px}
+.fc-no-cards{text-align:center;padding:60px;color:var(--cream-d)}
+
+@media(max-width:700px){header,.controls,.results-bar,.grid,.fc-panel{padding-left:16px;padding-right:16px}.grid{grid-template-columns:1fr}.stats-bar{flex-wrap:wrap}.stat-item{min-width:80px}.ai-panel{flex-direction:column}.ai-sidebar{width:100%;max-height:200px;border-right:none;border-bottom:1px solid var(--border)}.map-panel{height:calc(100vh - 90px)}.top-nav{padding:0 16px}.fc-panel{padding:24px 16px 60px}.fc-stage{}.fc-card-wrap{height:360px}.fc-face{padding:24px}}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="nav-logo">REC 700</div>
+  <button class="nav-tab active" onclick="switchTab('kb',this)"><span class="tab-icon">📚</span>知识库</button>
+  <button class="nav-tab" onclick="switchTab('map',this)"><span class="tab-icon">🗺</span>概念图谱</button>
+  <button class="nav-tab" onclick="switchTab('ai',this)"><span class="tab-icon">✦</span>AI 问答</button>
+  <button class="nav-tab" onclick="switchTab('fc',this)"><span class="tab-icon">🃏</span>闪卡复习</button>
+</nav>
+
+<!-- ═══ PANEL 1: KNOWLEDGE BASE ═══ -->
+<div class="panel active" id="panel-kb">
+<header>
+  <div class="eyebrow">个人知识体系库 · 2025</div>
+  <h1 class="h-title">REC 700<br><span>研究范式 · 批判理论</span></h1>
+  <p class="h-sub">哲学社会研究基础 &nbsp;·&nbsp; 认识论与方法论 &nbsp;·&nbsp; 原住民 / 女性主义 / 批判视角</p>
+  <div class="stats-bar">
+    <div class="stat-item"><span class="stat-n" id="sTotal">38</span><span class="stat-l">篇阅读</span></div>
+    <div class="stat-item"><span class="stat-n" id="sRead">0</span><span class="stat-l">已读</span></div>
+    <div class="stat-item"><span class="stat-n" id="sReading">0</span><span class="stat-l">阅读中</span></div>
+    <div class="stat-item"><span class="stat-n" id="sBookmarked">0</span><span class="stat-l">已收藏</span></div>
+    <div class="progress-wrap">
+      <div class="progress-label"><span>阅读进度</span><span id="pPct">0%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+    </div>
+  </div>
+</header>
+<div class="controls">
+  <div class="ctrl-row1">
+    <div class="search-wrap"><span class="search-icon">⌕</span><input type="text" id="srch" placeholder="搜索作者、概念、理论家、关键词…" autocomplete="off"></div>
+    <button class="ctrl-btn" id="sortBtn" onclick="cycleSort()">排序：默认 ↕</button>
+    <button class="ctrl-btn" id="viewBtn" onclick="toggleView()">紧凑视图</button>
+    <button class="ctrl-btn" onclick="exportNotes()">导出笔记 ↓</button>
+    <button class="compare-toggle" id="compareModeBtn" onclick="toggleCompareMode()">⇄ 比较模式</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">主题</span>
+    <button class="pill active" data-theme="all">全部</button>
+    <button class="pill" data-theme="method">方法论框架</button>
+    <button class="pill" data-theme="indigenous">原住民方法论</button>
+    <button class="pill" data-theme="positivism">实证主义</button>
+    <button class="pill" data-theme="phenomenology">现象学</button>
+    <button class="pill" data-theme="constructionism">社会建构主义</button>
+    <button class="pill" data-theme="critical">批判理论</button>
+    <button class="pill" data-theme="feminist">女性主义</button>
+    <button class="pill" data-theme="crt">批判种族理论</button>
+    <button class="pill" data-theme="queer">酷儿理论</button>
+    <button class="pill" data-theme="poststructural">后结构主义</button>
+    <button class="pill" data-theme="materialism">新唯物主义</button>
+    <button class="pill" data-theme="tourism">旅游/去殖民</button>
+    <button class="pill" data-theme="leisure">休闲研究</button>
+  </div>
+</div>
+<div class="results-bar"><span id="rbar"></span></div>
+<div class="grid" id="grid"></div>
+</div>
+
+<!-- ═══ PANEL 2: CONCEPT MAP ═══ -->
+<div class="panel" id="panel-map">
+<div class="map-panel">
+  
+  <!-- toggle bar for map/tension views -->
+  <div class="tension-toggle-bar" id="mapViewToggleBar">
+    <button class="tension-toggle-btn active" id="btnShowMap" onclick="showMapView('map')">🗺 概念图谱</button>
+    <button class="tension-toggle-btn" id="btnShowTension" onclick="showMapView('tension')">⚡ 理论张力矩阵</button>
+    <button class="tension-toggle-btn" id="btnShowMatrix" onclick="showMapView('matrix')">📊 议题比较表</button>
+  </div>
+<div class="map-toolbar" id="mapToolbar">
+    <span style="font-size:12px;color:var(--amber)">概念图谱</span>
+    <span style="font-size:11px;color:var(--cream-d)">节点大小=关联数量 &nbsp;·&nbsp; 颜色=主题类别</span>
+    <select id="mapTheme" onchange="filterMapTheme(this.value)" style="margin-left:8px;background:var(--bg3);border:1px solid var(--border);color:var(--cream-d);padding:4px 8px;border-radius:4px;font-size:11px;font-family:'Noto Sans SC',sans-serif">
+      <option value="all">所有主题</option>
+      <option value="method">方法论框架</option>
+      <option value="indigenous">原住民方法论</option>
+      <option value="positivism">实证主义</option>
+      <option value="phenomenology">现象学</option>
+      <option value="constructionism">社会建构主义</option>
+      <option value="critical">批判理论</option>
+      <option value="feminist">女性主义</option>
+      <option value="crt">批判种族理论</option>
+      <option value="queer">酷儿理论</option>
+      <option value="poststructural">后结构主义</option>
+      <option value="materialism">新唯物主义</option>
+      <option value="tourism">旅游/去殖民</option>
+      <option value="leisure">休闲研究</option>
+    </select>
+    <span class="map-hint">拖动节点 · 滚轮缩放 · 悬停查看摘要</span>
+  </div>
+  <div class="map-container">
+    <svg id="mapSvg"></svg>
+    <div class="map-tooltip" id="mapTip">
+      <div class="map-tooltip-author" id="tipAuthor"></div>
+      <div class="map-tooltip-summary" id="tipSummary"></div>
+    </div>
+    <div class="map-legend" id="mapLegend"></div>
+  </div>
+
+<!-- Tension threads panel -->
+<div class="tension-panel" id="tensionPanel">
+  <div class="tension-section">
+    <div class="tension-section-title">⚡ 显性批判与争锋</div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-critique">批判</span>Todd → 本体论转向（Holbraad, Viveiros de Castro）</div>
+      <div class="tension-nodes">
+        <span class="tension-node from">Todd, Z. (2016)</span>
+        <span style="color:var(--red);padding:4px">→ 批判</span>
+        <span class="tension-node to">Ontological Turn</span>
+      </div>
+      <div class="tension-desc">Todd 指出本体论转向声称反思权力，却在引用实践上延续白人欧洲中心结构——知识的 terra nullius：先把原住民的关系和权利从学术知识空间抹除，然后用欧洲理论填充。Rosiek et al. (2020) 进一步拓展了这一批判，指出新唯物主义（Barad, Latour等）的"Columbus发现非人能动性"的表演性矛盾。</div>
+      <div class="tension-quote">"Lighten up = Whiten up" — Todd (2016)</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-critique">批判</span>Tuck & Yang → Freire（conscientização ≠ 土地归还）</div>
+      <div class="tension-nodes">
+        <span class="tension-node from">Tuck & Yang (2012)</span>
+        <span style="color:var(--red);padding:4px">→ 批判</span>
+        <span class="tension-node to">Freire / Berbary forthcoming</span>
+      </div>
+      <div class="tension-desc">Tuck & Yang 直接批判将去殖民化稀释为意识觉醒（conscientização）的做法——Freire 的解放教育没有settler/native的结构区分，意识解放不自动等于土地归还。Berbary forthcoming 讨论的激进政治教育需要在此张力中定位：如何同时实践解放教育和真正的去殖民化？</div>
+      <div class="tension-quote">"Decolonization is not a metaphor" — Tuck & Yang (2012, p.1)</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-critique">批判</span>Bennett D → Johnston/Gregory（稻草人式实证主义批判）</div>
+      <div class="tension-nodes">
+        <span class="tension-node from">Bennett, D. (2009)</span>
+        <span style="color:var(--red);padding:4px">→ 批判</span>
+        <span class="tension-node to">地理学界的实证主义话语</span>
+      </div>
+      <div class="tension-desc">Bennett 批判学界把四种不同的实证主义（孔德式、逻辑实证主义、标准科学观、实证主义态度）混为一谈。Johnston 几乎全凭二手资料；Gregory 几乎只攻击孔德式。这一批判直接关系到 Crotty Ch.1 和 Baronov 的框架如何被正确使用。</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-critique">批判</span>Bailey et al. → Inclusionism（non-performativity）</div>
+      <div class="tension-nodes">
+        <span class="tension-node from">Bailey et al. (2023)</span>
+        <span style="color:var(--red);padding:4px">→ 批判</span>
+        <span class="tension-node to">主流"包容性"健身话语</span>
+      </div>
+      <div class="tension-desc">借用 Ahmed (2006) 的 non-performativity 框架：政策宣示的存在恰恰掩盖了实质性不平等的持续——机构以承认问题当作已改问题。这一批判与 Valtchanov & Parry 的激进关怀（radical care）、以及 Melamed 的包容叙事批判形成共鸣。</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-critique">批判</span>hooks → 学术女性主义的智识阶级层级</div>
+      <div class="tension-nodes">
+        <span class="tension-node from">hooks, b. (1991)</span>
+        <span style="color:var(--red);padding:4px">→ 批判</span>
+        <span class="tension-node to">女性主义内部的精英化倾向</span>
+      </div>
+      <div class="tension-desc">hooks 批判女性主义内部的"行动>理论"二元对立是统治政治在内部的再现。解放性理论必须口头可流通、在社区里流通——这直接挑战了 Hesse-Biber 梳理的学院式女性主义认识论谱系，也关联到 Taylor 的 Black feminism 的可及性问题。</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-critique">批判</span>Crenshaw et al. → 自由主义/保守主义的色盲框架共识</div>
+      <div class="tension-nodes">
+        <span class="tension-node from">Crenshaw et al. (1995)</span>
+        <span style="color:var(--red);padding:4px">→ 批判</span>
+        <span class="tension-node to">主流民权话语（perpetrator perspective）</span>
+      </div>
+      <div class="tension-desc">CRT 揭示自由派和保守派共享了同一个错误前提：种族意识=种族主义，因此无法触及结构性分析。这一批判延伸到 Melamed 的种族资本主义批判，以及 Ladson-Billings 对 Interest-Convergence 逻辑的分析。</div>
+    </div>
+  </div>
+
+  <div class="tension-section">
+    <div class="tension-section-title">🌱 继承与拓展关系</div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-builds">继承</span>Smith → Wilson → Tynan → Kimmerer（原住民方法论谱系）</div>
+      <div class="tension-nodes">
+        <span class="tension-node both">Smith (2012)</span>
+        <span style="color:var(--green);padding:4px">→</span>
+        <span class="tension-node both">Wilson (2008)</span>
+        <span style="color:var(--green);padding:4px">→</span>
+        <span class="tension-node both">Tynan (2021)</span>
+        <span style="color:var(--green);padding:4px">→</span>
+        <span class="tension-node both">Kimmerer (2013)</span>
+      </div>
+      <div class="tension-desc">Smith 建立去殖民研究的批判框架 → Wilson 深化为关系性问责与原住民范式四层结构 → Tynan 进一步本体论化关系性（all things are kin）→ Kimmerer 以Two-Eyed Seeing实践知识编结。各有侧重：Smith强调批判，Wilson强调范式，Tynan强调本体论，Kimmerer强调实践。</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-builds">继承</span>Crenshaw → Taylor → Lopez → Bailey（交叉性谱系）</div>
+      <div class="tension-nodes">
+        <span class="tension-node both">Crenshaw et al. (1995)</span>
+        <span style="color:var(--green);padding:4px">→</span>
+        <span class="tension-node both">Taylor (2017)</span>
+        <span style="color:var(--green);padding:4px">→</span>
+        <span class="tension-node both">Lopez (2024)</span>
+        <span style="color:var(--green);padding:4px">→</span>
+        <span class="tension-node both">Bailey et al. (2023)</span>
+      </div>
+      <div class="tension-desc">交叉性概念从 CRT 法学语境 → Black feminism 政治实践（If Black women were free…）→ 照护劳动的身体政治 → 休闲/健身空间的身体规训批判。每一步都将前一步的框架应用于更具体的场域，同时深化了物质性分析。</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-builds">继承</span>Halberstam → Changfoot & Hamrie（酷儿/crip时间性谱系）</div>
+      <div class="tension-nodes">
+        <span class="tension-node both">Halberstam (2005)</span>
+        <span style="color:var(--green);padding:4px">→</span>
+        <span class="tension-node both">Changfoot et al. (2022)</span>
+        <span style="color:var(--green);padding:4px">+</span>
+        <span class="tension-node both">Hamrie & Fritsch (2019)</span>
+      </div>
+      <div class="tension-desc">Halberstam 的酷儿时间性（反异性恋再生产时间）→ Changfoot 的 cripped aging（crip queer time + 原住民循环时间）→ Hamrie & Fritsch 的 Crip technoscience（反治愈逻辑的身体政治）。三者共同反对线性进步时间叙事，但分别从性别、残障、技术三个维度深化。</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-builds">继承</span>Bennett J → Rosiek → Stinson（新唯物主义在研究中的应用）</div>
+      <div class="tension-nodes">
+        <span class="tension-node both">Bennett, J. (2010)</span>
+        <span style="color:var(--green);padding:4px">→</span>
+        <span class="tension-node both">Rosiek et al. (2020)</span>
+        <span style="color:var(--green);padding:4px">→</span>
+        <span class="tension-node both">Stinson et al. (2022)</span>
+      </div>
+      <div class="tension-desc">Bennett 的生机唯物主义（thing-power）→ Rosiek 批判新唯物主义忽视原住民理论（Place-thought, grounded normativity）→ Stinson 将 ANT + 关系性问责用于追踪旅游中和解的物质性。这一谱系本身就体现了新唯物主义与原住民方法论的张力与对话。</div>
+    </div>
+  </div>
+
+  <div class="tension-section">
+    <div class="tension-section-title">🔀 跨主题的深层对话</div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-tension">张力</span>知识归属：个人 vs. 关系网络 vs. 宇宙</div>
+      <div class="tension-desc"><b style="color:var(--cream)">主流四范式（Crotty / Lincoln et al.）</b>：知识属于个人——研究者生产知识，发表后归学术共同体。<br><b style="color:#7ad890">Wilson / Tynan / Kimmerer</b>：知识属于宇宙/关系网络，研究者只是诠释者；知识获取需要互惠（reciprocity）。<br><b style="color:#e890b8">Hesse-Biber / hooks / Haraway</b>：知识是情境性的、位置性的（situated knowledges）——不是个人占有，也不是宇宙共有，而是在特定权力关系中生产出来的。</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-tension">张力</span>解放路径：意识觉醒 vs. 结构变革 vs. 土地归还 vs. 关系重建</div>
+      <div class="tension-desc"><b style="color:var(--cream)">Freire / hooks / Berbary forthcoming</b>：意识觉醒 → 解放教育 → 激进政治行动。<br><b style="color:#e89080">Crenshaw / Melamed / Ladson-Billings</b>：批判意识不够，需要结构性制度变革（反种族主义、再分配）。<br><b style="color:#7ad890">Tuck & Yang / Corntassel</b>：上述两者都不够——真正的去殖民化必须包含土地归还，不是隐喻。<br><b style="color:#78c8c8">Wilson / Tynan / Bigby</b>：从关系重建出发——复兴关系网络、语言、仪式是可持续自决的基础。</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-dialogue">对话</span>Crotty的四层框架 vs. Wilson的四层原住民范式</div>
+      <div class="tension-desc"><b style="color:var(--cream)">Crotty</b>：方法→方法论→理论视角→认识论（自下而上，工具性逻辑）。<br><b style="color:#7ad890">Wilson</b>：本体论→认识论→公理论→方法论（自上而下，存在性逻辑）。<br>关键差异：Crotty 的框架始于"如何做研究"；Wilson 的框架始于"我是谁/存在是什么"。Wilson 认为不能把方法论工具从其底层本体论前提中分离——这直接挑战了 Crotty 框架的工具主义倾向。</div>
+    </div>
+
+    <div class="tension-thread">
+      <div class="tension-thread-title"><span class="tension-badge badge-dialogue">对话</span>后结构主义 vs. 批判理论：语言/话语 vs. 结构/物质</div>
+      <div class="tension-desc"><b style="color:#b898e0">Berbary (2017) / Burr</b>：后结构主义关注话语如何构建主体和现实；power/knowledge而非经济/阶级结构是分析核心；解构是生产性的。<br><b style="color:#e89080">Crotty Critical / Melamed / Berbary forthcoming</b>：批判理论关注物质性结构（阶级、种族资本主义、劳动关系）；话语分析如果不连接回物质结构就是空洞的。<br>这一张力在 Melamed 的包容叙事批判（话语遮蔽物质）和 Berbary 的理论-实践一体（theory/practice）概念中都有所回应。</div>
+    </div>
+  </div>
+</div>
+
+<!-- Question comparison matrix panel -->
+<div class="tension-panel" id="matrixPanel">
+  <h3 style="font-family:'IM Fell English',serif;font-size:18px;color:var(--amber);margin-bottom:16px">📊 核心议题立场比较表</h3>
+  <p style="font-size:12px;color:var(--cream-d);margin-bottom:20px;line-height:1.7">各范式/理论家在六个核心议题上的立场对比——适用于写论文时快速定位某一议题上的多方观点。颜色：<span class="qm-pos agree">■ 肯定性立场</span> &nbsp;<span class="qm-pos critique">■ 批判性立场</span> &nbsp;<span class="qm-pos extend">■ 拓展/修正</span> &nbsp;<span class="qm-pos nuance">■ 复杂/张力</span></p>
+  <table class="question-matrix">
+    <thead>
+      <tr>
+        <th>文献</th>
+        <th>研究立场<br><small>中立 vs. 立场化</small></th>
+        <th>知识归属<br><small>个人 vs. 关系</small></th>
+        <th>去殖民化<br><small>如何理解？</small></th>
+        <th>解放路径<br><small>意识 vs. 结构 vs. 关系</small></th>
+        <th>时间性<br><small>线性 vs. 非线性</small></th>
+        <th>物质/话语<br><small>哪个优先？</small></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="qm-author">Crotty (1998)</td><td><span class="qm-pos nuance">框架中立，内容立场化</span></td><td><span class="qm-pos critique">知识属认识论体系</span></td><td><span class="qm-pos critique">未涉及</span></td><td><span class="qm-pos critique">未涉及解放</span></td><td><span class="qm-pos critique">隐含线性</span></td><td><span class="qm-pos nuance">两者均有位置</span></td></tr>
+      <tr><td class="qm-author">Smith (2012)</td><td><span class="qm-pos critique">研究必然是政治的</span></td><td><span class="qm-pos agree">知识属关系网络</span></td><td><span class="qm-pos agree">批判+行动</span></td><td><span class="qm-pos agree">结构变革+社区自决</span></td><td><span class="qm-pos nuance">历史化思维</span></td><td><span class="qm-pos nuance">话语与物质均重要</span></td></tr>
+      <tr><td class="qm-author">Wilson (2008)</td><td><span class="qm-pos critique">关系性问责</span></td><td><span class="qm-pos agree">知识属宇宙/关系</span></td><td><span class="qm-pos agree">原住民范式优先</span></td><td><span class="qm-pos agree">关系重建</span></td><td><span class="qm-pos agree">循环/关系性时间</span></td><td><span class="qm-pos agree">物质关系优先</span></td></tr>
+      <tr><td class="qm-author">Lincoln et al. (2011)</td><td><span class="qm-pos critique">范式决定立场</span></td><td><span class="qm-pos nuance">范式内部讨论</span></td><td><span class="qm-pos nuance">参与性范式接近</span></td><td><span class="qm-pos extend">解放兴趣（Habermas）</span></td><td><span class="qm-pos critique">传统线性</span></td><td><span class="qm-pos nuance">各范式不同</span></td></tr>
+      <tr><td class="qm-author">Tuck & Yang (2012)</td><td><span class="qm-pos critique">政治介入是必须的</span></td><td><span class="qm-pos agree">土地主权/知识主权</span></td><td><span class="qm-pos critique">土地归还，非隐喻</span></td><td><span class="qm-pos critique">土地归还>意识觉醒</span></td><td><span class="qm-pos nuance">代际长时间尺度</span></td><td><span class="qm-pos agree">物质优先</span></td></tr>
+      <tr><td class="qm-author">Crenshaw et al. (1995)</td><td><span class="qm-pos critique">学术必然是政治的</span></td><td><span class="qm-pos nuance">集体经验是来源</span></td><td><span class="qm-pos extend">反种族主义先行</span></td><td><span class="qm-pos extend">结构变革+制度介入</span></td><td><span class="qm-pos nuance">历史积累视角</span></td><td><span class="qm-pos nuance">话语+物质</span></td></tr>
+      <tr><td class="qm-author">Melamed (2015)</td><td><span class="qm-pos critique">批判包容话语</span></td><td><span class="qm-pos critique">批判知识资本化</span></td><td><span class="qm-pos critique">去殖民+废除主义</span></td><td><span class="qm-pos critique">结构变革，废除</span></td><td><span class="qm-pos critique">资本时间批判</span></td><td><span class="qm-pos agree">物质/生产关系优先</span></td></tr>
+      <tr><td class="qm-author">hooks (1991)</td><td><span class="qm-pos critique">理论即政治实践</span></td><td><span class="qm-pos agree">集体知识来源</span></td><td><span class="qm-pos nuance">种族/性别交织</span></td><td><span class="qm-pos agree">意识觉醒+集体解放</span></td><td><span class="qm-pos nuance">当下性</span></td><td><span class="qm-pos nuance">两者均有位置</span></td></tr>
+      <tr><td class="qm-author">Halberstam (2005)</td><td><span class="qm-pos critique">反规范性立场</span></td><td><span class="qm-pos nuance">亚文化集体知识</span></td><td><span class="qm-pos nuance">批判homonormativity</span></td><td><span class="qm-pos nuance">亚文化实践抵抗</span></td><td><span class="qm-pos critique">拒绝线性时间</span></td><td><span class="qm-pos nuance">空间+话语</span></td></tr>
+      <tr><td class="qm-author">Berbary (2017)</td><td><span class="qm-pos critique">永久政治批判</span></td><td><span class="qm-pos nuance">话语建构知识</span></td><td><span class="qm-pos nuance">Palimpsest策略</span></td><td><span class="qm-pos nuance">解构+重新部署</span></td><td><span class="qm-pos critique">反线性进步</span></td><td><span class="qm-pos agree">物质-话语纠缠</span></td></tr>
+      <tr><td class="qm-author">Berbary forthcoming</td><td><span class="qm-pos critique">激进立场</span></td><td><span class="qm-pos agree">集体斗争产物</span></td><td><span class="qm-pos critique">土地+反资本</span></td><td><span class="qm-pos critique">激进政治教育</span></td><td><span class="qm-pos nuance">斗争时间</span></td><td><span class="qm-pos agree">物质干预优先</span></td></tr>
+      <tr><td class="qm-author">Bennett, J. (2010)</td><td><span class="qm-pos nuance">本体论平等主义</span></td><td><span class="qm-pos agree">非人能动性共有</span></td><td><span class="qm-pos nuance">未直接涉及</span></td><td><span class="qm-pos nuance">放弃控制欲</span></td><td><span class="qm-pos nuance">物质性时间</span></td><td><span class="qm-pos agree">物质能动性优先</span></td></tr>
+      <tr><td class="qm-author">Rosiek et al. (2020)</td><td><span class="qm-pos critique">引用政治是立场</span></td><td><span class="qm-pos agree">Place-thought</span></td><td><span class="qm-pos critique">知识主权是核心</span></td><td><span class="qm-pos agree">深层互惠</span></td><td><span class="qm-pos agree">土地时间</span></td><td><span class="qm-pos agree">物质+关系性</span></td></tr>
+      <tr><td class="qm-author">Hesse-Biber (2007)</td><td><span class="qm-pos critique">立场认识论</span></td><td><span class="qm-pos agree">被压迫者知识优先</span></td><td><span class="qm-pos extend">反殖民方法论</span></td><td><span class="qm-pos extend">praxis</span></td><td><span class="qm-pos nuance">历史特定性</span></td><td><span class="qm-pos nuance">话语+物质</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+</div>
+
+<!-- ═══ PANEL 3: AI Q&A ═══ -->
+<div class="panel" id="panel-ai">
+<div class="ai-panel">
+  <div class="ai-sidebar">
+    <div class="ai-sidebar-title">💡 提问建议</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">Smith 和 Wilson 在去殖民研究方法论上有什么核心差异？</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">Crotty 的四层框架和 Lincoln et al. 的范式分类有什么关系？</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">帮我梳理「交叉性」这个概念在 Crenshaw、Taylor、Bailey 三篇中的发展脉络</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">Tuck & Yang 对 Freire 的批判是什么？Berbary 的回应是什么？</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">新唯物主义（Bennett J, Rosiek, Stinson）和原住民关系性本体论有什么交集和张力？</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">比较 Halberstam 的酷儿时间性和 Changfoot 的 cripped aging——它们如何都反对线性时间叙事？</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">用 Smith 的五问来检验 Mock et al. 2025 这篇量化研究</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">帮我写一段话，整合 hooks、Taylor、Hesse-Biber 三人对女性主义理论的立场</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">Melamed 的种族资本主义和 Berbary 的激进政治教育如何连接？</div>
+    <div class="ai-suggestion" onclick="useSuggestion(this)">整个课程的38篇阅读，有哪些核心张力或争论是贯穿始终的？</div>
+  </div>
+  <div class="ai-main">
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-welcome">
+        <div class="ai-welcome-icon">✦</div>
+        <h3>REC 700 AI 学习助手</h3>
+        <p>我已读完你的全部 38 篇笔记。<br>可以问我任何跨文献的问题——<br>比较理论、梳理概念脉络、或帮你起草论文段落。</p>
+      </div>
+    </div>
+    <div class="ai-input-bar">
+      <textarea id="aiInput" placeholder="问我关于这38篇阅读的任何问题…" rows="1" onkeydown="aiKeydown(event)" oninput="autoResize(this)"></textarea>
+      <button class="ai-send-btn" id="aiSendBtn" onclick="sendAI()" title="发送">▶</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ PANEL 4: FLASHCARDS ═══ -->
+<div class="panel" id="panel-fc">
+<div class="fc-panel">
+  <div class="fc-header">
+    <h2>闪卡复习</h2>
+    <div class="fc-controls">
+      <button class="ctrl-btn" onclick="shuffleFC()">随机排列 ⇄</button>
+      <button class="ctrl-btn" onclick="resetFC()">重置进度</button>
+    </div>
+  </div>
+  <div class="fc-theme-filter" id="fcThemeFilter"></div>
+  <div class="fc-meta" id="fcMeta"></div>
+  <div class="fc-stage" id="fcStage">
+    <div class="fc-card-wrap" id="fcWrap" onclick="flipFC()">
+      <div class="fc-card-inner" id="fcInner">
+        <div class="fc-face fc-front" id="fcFront">
+          <div class="fc-face-accent" id="fcAccent"></div>
+          <div class="fc-year-badge" id="fcYear"></div>
+          <div class="fc-author" id="fcAuthor"></div>
+          <div class="fc-title" id="fcTitle"></div>
+          <div class="fc-front-tags" id="fcTags"></div>
+        </div>
+        <div class="fc-face fc-back" id="fcBack">
+          <div class="fc-face-accent" id="fcAccentBack"></div>
+          <div class="fc-back-label">核心论点</div>
+          <div class="fc-core-arg" id="fcArg"></div>
+          <div class="fc-core-exp" id="fcExp"></div>
+          <div class="fc-quote-strip" id="fcQuote" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-flip-hint" id="fcHint">点击翻面 →</div>
+  </div>
+  <div class="fc-nav">
+    <button class="fc-nav-btn" id="fcPrev" onclick="navFC(-1)">‹</button>
+    <div class="fc-progress-track"><div class="fc-progress-inner" id="fcProgress"></div></div>
+    <div class="fc-counter" id="fcCounter">1 / 38</div>
+    <button class="fc-nav-btn" id="fcNext" onclick="navFC(1)">›</button>
+  </div>
+  <div style="text-align:center;margin-top:16px;display:flex;gap:12px;justify-content:center">
+    <button class="ctrl-btn" onclick="markFC('seen')" style="border-color:#7a5820;color:#c8953a">标记为阅读中</button>
+    <button class="ctrl-btn" onclick="markFC('mastered')" style="border-color:#2a5a2a;color:#4a9a4a">已掌握 ✓</button>
+  </div>
+  <div class="fc-mastered-bar" id="fcDots"></div>
+</div>
+</div>
+
+<script type="application/json" id="jdata">
+[{"id": 1, "author": "Crotty, M.", "year": "1998", "title": "Introduction: The research process [Ch.1]. The Foundations of Social Research. SAGE.", "themes": ["method"], "summary": "厘清方法论迷宫的核心框架：将研究过程分解为方法→方法论→理论视角→认识论四个相互嵌套的层级，强调这是层级关系而非平行关系。以质性研究（建构主义→符号互动论→民族志→参与式观察）和量性研究（客观主义→实证主义→问卷调查→统计分析）为双线例证。同时处理本体论的位置争议：Crotty认为无需单独提出本体论，其他学者所谓的特定学派对社会现实的视角等价于他的理论视角层。整章的核心贡献是帮助研究者建立研究坐标系，避免方法论混乱。", "keyArgs": [{"term": "四层层级结构", "exp": "方法→方法论→理论视角→认识论。层级关系而非平行关系，每层为上一层提供逻辑基础。不可混淆层次：质化/量化是方法层的差异，不能等同于认识论层面的建构主义/实证主义对立。"}, {"term": "认识论三类型", "exp": "客观主义（objectivism）：意义独立于意识，存在于物中；建构主义（constructionism）：意义在主体与世界的互动中生成；主观主义（subjectivism）：意义由主体投射而非发现。"}, {"term": "Qual/Quant大分裂的根本错误", "exp": "质化不等于反实证主义，量化不等于实证主义。差异在认识论和理论视角层面，不在是否使用统计数据。把方法论层面的差异当成世界观/认识论层面的分裂是根本性错误。"}, {"term": "箭头方向的双向性", "exp": "可以从实践问题（方法）逆向追溯至认识论；也可从世界观（认识论）演绎至方法选择。研究者需要清楚自己在哪个方向上操作，并保持一致性。"}, {"term": "本体论的争议位置", "exp": "Crotty认为本体论不必单独提出，其他学者关于特定学派对社会现实的视角等价于他的理论视角层。这是方法论讨论中的常见分歧点，后续Wilson等人对此有进一步讨论。"}], "questions": ["在具体研究中，通常从哪个层级开始？从实践问题出发（自下而上）还是从世界观出发（自上而下）？", "方法论的独特性体现在哪里？它是否只是认识论和方法之间的翻译层？", "如果研究者无法清楚说明自己的认识论立场，这对研究的效度意味着什么？", "一个研究者可以在不同项目中使用不同的认识论立场吗？还是说世界观是一致的？"], "thinkers": ["Crotty", "Husserl", "Piaget", "Mead", "Blumer"], "method": "为整门课提供元框架。阅读任何文献时，追问：这个理论在哪个层级上运作？它的认识论前提是什么？方法的选择如何被认识论所限定？", "note": "这是建立研究坐标系的必读入门。读懂了这章，后面所有文章都有了定位工具。", "related": ["Lincoln et al 2011", "Wilson 2008", "Bennett D 2009", "Baronov 2012"], "quotes": [{"text": "A hierarchical relationship, not a parallel one — the four elements run in series: method → methodology → theoretical perspective → epistemology, with bidirectional arrows.", "src": "Crotty (1998, p.3); 笔记整理"}, {"text": "Qual: Constructivism → Symbolic Interactionism → Ethnography → Participant Observation; Quant: Objectivism → Positivism → Survey Research → Statistical Analysis. The stratification of qual/quant aspects resides within methodologies, whilst disputes over worldviews manifest within epistemology and theoretical perspectives.", "src": "Crotty (1998, pp.5–9)"}, {"text": "Ontological entanglement does not necessitate fixed pairings; Crotty contends that ontology need not be singled out — the notion of 'a particular school's perspective on social reality' espoused by other scholars is essentially equivalent to Crotty's theoretical perspective.", "src": "Crotty (1998, p.10)"}, {"text": "'Quantitative = positivism, qualitative = anti-positivism' → The error lies in treating 'methodological differences' as 'worldview divisions'. The divergence resides at the epistemological/theoretical level, not in whether statistics are employed.", "src": "Crotty (1998); 笔记整理"}]}, {"id": 2, "author": "Smith, L. T.", "year": "2012", "title": "Decolonizing Methodologies: Research and Indigenous Peoples [Introduction]. Zed Books.", "themes": ["indigenous", "method"], "summary": "从被殖民者的视角出发，系统揭示研究与帝国主义/殖民历史的深层纠缠。研究被视为知识抢夺的机制：欲望→提取→宣称所有权。知识被挪用、话语被代表、最终土地/权利/语言/生活方式被否定——研究是这一链条中的关键环节。萨义德的东方主义框架被引入，指出西方学术话语通过研究建构他者，学术机构/话语/治理共同构成殖民运作的场域。提出去殖民研究的五个核心问题，并超越批判层面，呼吁研究从解构转向更深的行动路径。", "keyArgs": [{"term": "研究即伤疤（research is a dirty word）", "exp": "原住民社区对研究有深刻的负面经历。研究与帝国主义历史缠绕：用短暂接触代表整体，这是学术傲慢与概括的暴力。研究者带走知识，主体性被剥夺。"}, {"term": "提取-代表-支配机制", "exp": "知识被抢夺，话语被代表，最终土地/权利/语言/生活方式被否定。研究是再生产这一机制的微观场域。可以理解为研究→再现→支配的三步链条。"}, {"term": "萨义德东方主义框架", "exp": "西方话语通过研究建构他者（the Other）。学术机构/话语/治理共同运作，生产关于原住民的知识，而这些知识服务于殖民利益而非原住民利益。"}, {"term": "反掠夺研究的五问", "exp": "谁的研究？谁拥有？谁受益？谁设计/执行/书写？如何传播？补充不可见标准：社区内部有哪些规则在无声运作？为何即便有内部规则，也倾向选择非原住民研究者？"}, {"term": "从批判到行动", "exp": "仅仅探索解构和历史不能改变现实。研究必须从批判层面转向更深的行动路径，包括支持原住民自我研究议程、改变知识生产的权力关系。"}], "questions": ["如何在自己的研究实践中识别隐藏的殖民逻辑？尤其是当研究者来自某种特权位置时？", "原住民社区内部的不可见标准是什么？为何有时内部规则反而倾向选择非原住民研究者？", "研究者如何在谦逊（humility）与有效行动之间找到平衡，避免研究沦为姿态表演？", "去殖民方法论与批判理论/女性主义方法论的关系：互补还是竞争？"], "thinkers": ["Smith", "Said", "Foucault", "Spivak", "Gramsci"], "method": "进入原住民社区研究时的必读前置文本。每个研究设计决策都需要经过Smith的五问检验。同时要识别自己的研究位置如何影响知识生产。", "note": "这篇文章让我重新审视自己的田野研究预设——我是否也在某种程度上复制了提取-代表-支配的结构？", "related": ["Wilson 2008", "Corntassel 2012", "Tynan 2021", "Tuck & Yang 2012", "Rosiek et al 2020"], "quotes": [{"text": "Desire, extract, claim ownership: the fruits belong to you, the subjectivity is denied to me. Knowledge is appropriated, discourse is represented, and ultimately even land, rights, language, and ways of life are negated.", "src": "Smith (2012, p.1); 笔记整理"}, {"text": "Research represents 'the whole through fleeting contact' — academic arrogance and the violence of generalisation. The Scars of Research: entangled with imperialist and colonial history.", "src": "Smith (2012, pp.1–2)"}, {"text": "Whose research? Who owns it? Who benefits? Who designs, executes, writes? How is it disseminated? Anti-predatory research.", "src": "Smith (2012, pp.10–11)"}, {"text": "Merely exploring deconstruction and history cannot alter reality; research must shift from critique towards deeper pathways for action.", "src": "Smith (2012, p.19)"}]}, {"id": 3, "author": "Wilson, S.", "year": "2008", "title": "Research is Ceremony [Ch. 1+2]. Fernwood Publishing.", "themes": ["indigenous", "method"], "summary": "提出研究即关系实践这一核心命题，要求理解研究必须理解研究者本身。将研究范式解构为本体论→认识论→公理论（axiology）→方法论四层，强调原住民研究范式不是在主流范式上添加原住民元素，而是需从自身完整的本体论出发。方法论工具与其底层信念不可分离，不能借用工具而抛弃范式前提。关系性问责（relational accountability）是原住民研究写作的核心：研究者必须对其与概念、社区的关系保持可见性和责任感。", "keyArgs": [{"term": "研究即关系实践", "exp": "不只是研究者研究社区，而是研究者作为关系网络中的一个节点，通过研究履行对关系的责任。理解我的研究，必须更深入理解我这个研究者的关系位置。"}, {"term": "原住民范式四层结构", "exp": "本体论（存在是什么）→认识论（如何知道）→公理论（什么有价值）→方法论（如何探究）。这四层在原住民范式中是有机整体，不能分拆使用。"}, {"term": "不能只是添加（add Indigenous）", "exp": "不能在主流范式里添加原住民元素就称之为原住民研究。方法论工具与其底层本体论-认识论信念相连，工具不可与范式前提分离。"}, {"term": "关系性问责（relational accountability）", "exp": "研究写作中需要对研究者-概念-社区的关系进行显性化。不是讲自己的背景，而是使这三者之间的关系结构可见：谁能说话，如何说话，对谁负责。"}, {"term": "知识归属的根本差异", "exp": "主流范式的隐含假设：知识属于个人。原住民范式：知识属于宇宙/关系网络，研究者只是诠释者而非所有者。这是认识论层面的根本分歧。"}], "questions": ["本质化范式的风险：强调原住民范式的共同性时，如何避免过度同质化多样的原住民世界观？", "从关系性问责到大学伦理委员会审查、数据治理、作者署名规范，需要哪些具体的制度框架来落地？", "当原住民研究者在主流大学体制内工作时，如何在不妥协自身范式的前提下获得资源和学术空间？"], "thinkers": ["Wilson", "Smith", "Absolon", "Kovach"], "method": "在写研究设计或论文方法论章节时，Wilson提供了一个检验标准：我是否清楚说明了我的关系性立场？我与研究概念和社区的关系是否可见？", "note": "这篇让我开始思考：作为研究者，我对谁负责？我的研究关系是什么？这不是表演性的问题，而是实质性的方法论承诺。", "related": ["Smith 2012", "Tynan 2021", "Rosiek et al 2020", "Tuck & Yang 2012"], "quotes": [{"text": "'Research is the practice of relationship.' You must understand me (the researcher) more deeply to comprehend my work.", "src": "Wilson (2008, p.7)"}, {"text": "The 'research paradigm' is deconstructed into four interrelated layers: Ontology → Epistemology → Axiology → Methodology. Indigenous research paradigm = Indigenous ontology / epistemology / axiology / methodology.", "src": "Wilson (2008, pp.33–37)"}, {"text": "It is insufficient to merely 'add' Indigenous elements to the mainstream paradigm, as methodological tools are invariably tied to their underlying beliefs — one cannot separate the tool from its paradigmatic premises.", "src": "Wilson (2008, p.42)"}, {"text": "The necessity of 'relational accountability' in research writing: making explicit the relationship between researcher–concept–community, integrating 'who can speak, how they speak, and to whom they are accountable' into methodology and ethics.", "src": "Wilson (2008, pp.77–79)"}, {"text": "The shared implicit assumption of the four mainstream paradigms is 'knowledge belongs to individuals'; whereas the Indigenous paradigm holds that knowledge belongs to the 'cosmos/network of relationships', with researchers merely as interpreters.", "src": "Wilson (2008, pp.56–58)"}]}, {"id": 4, "author": "Lincoln, Lynham & Guba", "year": "2011", "title": "Paradigmatic controversies, contradictions, and emerging confluences. In SAGE Handbook of Qualitative Research.", "themes": ["method"], "summary": "系统梳理七大范式争议，比较实证主义/后实证主义/批判理论/建构主义/参与性五大范式在七个维度上的立场差异与汇合趋势。七大争议包括：公理论（axiology）、可通约性（commensurability）、控制（control）、真理基础、效度扩展、声音/反思性/后现代文本表述。重要贡献：范式间存在汇合（confluences）而非简单对立，这种汇合特别体现在建构主义、批判理论与参与性范式之间。", "keyArgs": [{"term": "公理论（axiology）", "exp": "研究中什么构成价值？如何将灵性/神性维度纳入学术研究？Guba & Lincoln认为这是被长期忽视的范式维度。宗教/灵性在研究中的地位：如何简化宗教元素使其可被学术接纳，同时不失去其本质？"}, {"term": "可通约性（commensurability）", "exp": "不同范式间能否在哲学层面相互通约？答案是：哲学上不可通约，但方法上可兼容。向卫理公会听众提天主教问题这一比喻揭示了范式间对话的本质难题。"}, {"term": "效度扩展（extended criteria）", "exp": "各范式提出不同标准：水晶体效度（Richardson）；极性标准（Guba & Lincoln）；催化性/激进性标准（Lather）；关系性和伦理中心标准（Lincoln）；社区决定效度。"}, {"term": "声音/反思性/后现代文本", "exp": "谁有权为他者发声？反思性是否有尽头（每次反思都来自尚未被审视的立场）？后现代文本表述：研究应以何种形式呈现？这三个问题被视为当前最需要关注的核心争议。"}, {"term": "范式汇合趋势", "exp": "批判理论、建构主义、参与性范式在某些问题上出现汇合：都关注权力/声音/变革；都对价值中立科学持批判态度；都重视研究的伦理和政治维度。"}], "questions": ["反思性是否是无限循环？每次反思都始于一个尚未被检验的立场，是否存在可操作的停止点？", "公理论的操作化：如何在实际研究评估中测量研究的价值立场是否与其范式主张一致？", "范式间的汇合是真正的哲学融合，还是方法层面的临时借用？这对研究设计有何实践含义？"], "thinkers": ["Guba", "Lincoln", "Habermas", "Foucault", "Richardson", "Lather"], "method": "在自己的研究设计中，需要明确回答：我处于哪个范式框架中？我采用哪些效度标准？我如何处理声音和反思性问题？", "note": "这篇文章的范式比较表是整个研究方法论课程的视觉摘要。建议反复回看，追踪自己立场的漂移。", "related": ["Crotty Ch.1 1998", "Baronov 2012", "Bennett D 2009"], "quotes": [{"text": "Whether different paradigms can be reconciled — paradigms cannot achieve philosophical commensurability, but may be methodologically compatible. 'Posing Catholic questions to Methodist audiences.'", "src": "Lincoln, Lynham & Guba (2011, p.100)"}, {"text": "Is reflexivity finite? Or an infinite loop, where each reflection begins from a stance not yet examined? Even if we agree to shift contexts as a foundation, might heightened individuality lead to a lack of common ground?", "src": "Lincoln et al. (2011, p.116); 笔记整理"}, {"text": "Extended Criteria for Quality Assessment: (a) Crystal Line Validity (Richardson); (b) Polarity Criteria (Guba and Lincoln); (c) Catalytic, Radical, and Sensory Criteria (Lather); (d) Relational and Ethocentric Criteria (Lincoln); (e) Community-determined validity.", "src": "Lincoln et al. (2011, pp.120–122)"}, {"text": "Critical thinking exists within all paradigms. Studying paradigms does not equate to adopting positions or values. The current debate requiring most attention centres on voice, reflexivity, and postmodern textual representations.", "src": "Lincoln et al. (2011); 笔记整理"}]}, {"id": 5, "author": "Bennett, D.", "year": "2009", "title": "Positivism/positivist geography. In International Encyclopedia of Human Geography. Elsevier.", "themes": ["positivism", "method"], "summary": "批判学界将实证主义当稻草人使用的倾向，要求把对实证主义的评判放回其科学哲学语境。厘清四种不同的实证主义——孔德式实证主义、逻辑实证主义（维也纳学派）、标准科学观、实证主义态度——揭示这四者之间的历史谱系差异，不能混为一谈。重点批判地理学对实证主义的误配：把量化/空间科学直接等同于逻辑实证主义是误配；地理学对实证主义的批判主要建立在二手资料和混淆概念之上。", "keyArgs": [{"term": "四种实证主义不能混淆", "exp": "①孔德式：科学是唯一有效认识方式，追求统一科学法则；②逻辑实证主义（维也纳学派）：命题的意义=其验证方法，反形而上学；③标准科学观：科学方法的通俗化描述；④实证主义态度：泛化的客观/中立倾向。四者来源不同，主张不同，不可混同。"}, {"term": "验证原则的自指困境", "exp": "逻辑实证主义主张：只有可由公共经验检验的命题才有意义。但这句话本身可检验吗？若不可检验，则按其自身标准无意义；若可检验，需要站到语言外面去看，但做不到。罗素在维特根斯坦《逻辑哲学论》序言中早已指出这个自噬点。"}, {"term": "维也纳学派的历史政治语境", "exp": "不是纯粹的学术洁癖，而是在思想-政治冲突场域中运作：反对德国观念论与直觉特权的社会后果，把公开可检验与反威权知识政治捆绑。处于相对论、量子论等科学观转变的历史节点。"}, {"term": "地理学对实证主义的误配", "exp": "Johnston将孔德、逻辑实证主义、标准科学观混为一谈；把量化/空间科学直接等同于逻辑实证主义是误配。地理学对实证主义的批判主要依赖二手资料，这是稻草人式攻击的典型案例。"}, {"term": "稻草人批判的意义", "exp": "批评实证主义之前，必须先还原其哲学历史语境。批评必须具体：你所攻击的是哪种实证主义？在哪个历史阶段？面对什么样的他者？否则批评就是打稻草人。"}], "questions": ["批评实证主义之前，必须先交代：你所讨论的科学观处于何种历史阶段，面对什么他者？否则批评就是打稻草人。", "如何区分哲学层面、方法层面、技术层面三层面的实证主义，并分别进行评估？", "地理学或休闲研究中，哪些关于实证主义的批评是有效的，哪些属于稻草人式攻击？"], "thinkers": ["Comte", "Schlick", "Neurath", "Carnap", "Wittgenstein", "Popper", "Russell", "Johnston"], "method": "做研究时需要先确定：我在本体论和认识论的坐标位置；我如何看待真理观（对应论 vs 连贯论）；之后才能懂得什么是证据，怎么用证据。", "note": "这篇是整个实证主义讨论中最具澄清力的文章，配合Crotty第二章一起读效果最好。", "related": ["Crotty positivism 1998", "Baronov 2012", "Lincoln et al 2011"], "quotes": [{"text": "Positivism/positivist: in the past 30 years of human geography, used in a pejorative sense. We must place the judgment of 'positivism' back into its philosophical domain — science itself is not constant.", "src": "Bennett (2009, p.296)"}, {"text": "Phrased starkly: 'What does it mean to say a proposition is true?' Pushed empiricism to its limits, anti-metaphysical and anti-idealist, maintaining that knowledge only exists in the form of 'empirically verifiable propositions'.", "src": "Bennett (2009, p.299)"}, {"text": "Johnston conflated Comte, logical positivism, and standard scientific views; Gregory almost only attacked the Comtean form, based mainly on secondary sources — the result: the academic impression of 'positivism' was locked in by second-hand narratives.", "src": "Bennett (2009, p.308)"}, {"text": "When doing research, one must think about one's own coordinate position: which side of ontology and epistemology am I on? How do I view truth — correspondence or coherence? Only then can I understand what counts as evidence, and how to use it.", "src": "Bennett (2009); 笔记整理"}, {"text": "If you declare 'only verifiable sentences have meaning', is this sentence itself verifiable? If not verifiable = meaningless by its own standard; if verifiable = you must step outside language to check, which is impossible. Russell pointed out this self-consuming point in his preface to the Tractatus.", "src": "Bennett (2009, p.301); Russell引用"}]}, {"id": 6, "author": "Crotty, M.", "year": "1998", "title": "Positivism: The March of Science [Ch. 2]. The Foundations of Social Research. SAGE.", "themes": ["positivism"], "summary": "历史化实证主义的发展脉络：从孔德的统一科学方法论到逻辑实证主义的验证原则，再到后实证主义的降格主张（海森堡测不准、玻尔互补性、库恩范式转移）。厘清Positive的词源来自positive law（实定法）：意指被设定/给定的，相对于靠推理的自然法，因此positive science意味着扎根于给定之物，而非等同于量化和数学。批判性地追踪科学的自我赋权：问题不在科学做了什么，而在它自我赋予的地位（唯一真、绝对客观）。", "keyArgs": [{"term": "Positive的词源溯源", "exp": "来自positive law（实定法）——意指被设定/给定的（posited/given），相对于靠推理的自然法。因此positive science核心是以所给为起点，不可简单等同于量化和数学方法。"}, {"term": "孔德的关键贡献", "exp": "不是数学崇拜，而是方法论统一：不同学科可以共享积极科学方法。强调观察-实验-比较三步，指出单一事实与其他事实的连接性造就科学意义。"}, {"term": "逻辑实证主义验证原则", "exp": "分析命题（如2+2=4，同语反复，无事实含量）vs 综合命题（需靠经验/感觉材料验证）。形而上学、伦理、美学、宗教因不可验证而被排除出知识版图——大量人类关切（价值/伦理）因此被驱逐。"}, {"term": "后实证主义的科学降格", "exp": "海森堡测不准原则：观测改变对象，动摇确定性/客观性的绝对性。玻尔互补性：局限是本体论的。Crotty：科学知识是主动建构出来的，而非被动抄录自然法则。"}, {"term": "库恩的范式理论", "exp": "范式=一个时代的统一信念包与问题框架；正常科学是在范式内解谜式推进；异常→危机→范式转移。Crotty：科学并非温室里的理性，而是有利益和社会性的人类活动。"}], "questions": ["质化研究也可以被实证主义化（若追求客观可概化真），量化研究也可以是非实证主义的（若被当作解释/阐释）——这个框架如何改变我们对方法选择的理解？", "当代科学家更喜欢找支持而不是主动伪证（Crotty的批评），这揭示了什么关于科学实践的社会学现实？"], "thinkers": ["Comte", "Mach", "Hempel", "Kuhn", "Popper", "Heisenberg", "Bohr", "Lakatos"], "method": "为研究者提供实证主义的完整历史图谱。读完后需要定位自己：我在这个图谱的哪个位置？我是否清楚自己选择了什么，以及为什么。", "note": "", "related": ["Bennett D 2009", "Baronov 2012", "Crotty Ch.1 1998"], "quotes": [{"text": "In 'positive religion / positive law', 'positive' means 'posited / given' — relative to natural religion / natural law derived by reason. Therefore positive science = not relying on metaphysical reasoning, but grounded in what is given. Cannot be equated with quantification and mathematics.", "src": "Crotty (1998, pp.20–21)"}, {"text": "Comte: not mathematical worship, but methodological unification — different disciplines can share one positive scientific method. Emphasising observation–experiment–comparison, indicating that a single fact's connection to others creates scientific meaning.", "src": "Crotty (1998, p.22)"}, {"text": "Post-positivism: not 'quantitative vs qualitative'. Qualitative can also be positivist (if it claims objective generalisable truth), and quantitative can be non-positivist (if taken as interpretation). Researchers need to declare their stance: what is your understanding of meaning/reality?", "src": "Crotty (1998, pp.40–41); 笔记整理"}, {"text": "Kuhn: paradigm = a unified belief package of an era; normal science advances by puzzle-solving within the paradigm; anomalies → crisis → paradigm shift. Science is not 'reason in a greenhouse' but a human activity with interests and social dimensions.", "src": "Crotty (1998, p.38)"}]}, {"id": 7, "author": "Baronov, D.", "year": "2012", "title": "Postpositivism [Ch. 3]. Conceptual Foundations of Social Research Methods. Paradigm Publishers.", "themes": ["positivism"], "summary": "系统介绍后实证主义：从绝对真理到近似真理的认识论转变。区分三个内部流派：晚期逻辑实证主义者、批判悲观派（埋葬实证传统）、批判乐观派（救赎实证传统）。当前社会科学主流基调：晚期逻辑实证主义+乐观派改造。系统介绍D-N（演绎-法则）模型、法则特征、因果概念的经验主义处理，以及后期维特根斯坦语言游戏对逻辑实证主义的结构性冲击。", "keyArgs": [{"term": "D-N（演绎-法则）模型", "exp": "Hempel & Oppenheim：社会科学也应以一般法则+演绎来解释与预测。法则要求：普遍陈述，不同于偶然事实；若A则B的检验形式。例：人性逐利→福利慷慨→不工作的政策逻辑。但前提隐含了价值判断，这是内在问题。"}, {"term": "因果的经验主义处理", "exp": "在经验主义约束下，因果不可被直接观察，只能当作不变联系（invariable sequence）。社会科学多是充分关系而非必要关系。局限：忽略机制层级，是否混淆了机制与条件？"}, {"term": "后期维特根斯坦的冲击", "exp": "语言游戏（language games）：词义取决于使用情境，不存在普遍语义。这构成对逻辑实证主义的结构性冲击——因为逻辑实证主义的验证原则本身需要一种通用描述语言，而这是不存在的。"}, {"term": "可错论（fallibilism）", "exp": "乐观派立场：承认知识有限但进步仍然可能；多元理性与可错论；确认不等于理性抉择，理性是让竞争主张相互答辩，暂时的优解。这与Popper的证伪主义有内在联系。"}, {"term": "社会-文化嵌入性", "exp": "研究议题的提出、研究结果的呈现与使用，都被价值与利益塑形。如何设计防偏机制？如何区分更真与更强势的胜出？这是乐观派需要进一步解答的问题。"}], "questions": ["共同准绳（common yardstick）如何避免被强势群体垄断？这是可错论的核心政治问题。", "如何区分知识的真正进步与强势立场的胜出？在社会科学中，这条线在哪里？", "经验概括会不会使得理论走向碎片化，无法形成有解释力的整体框架？"], "thinkers": ["Hempel", "Oppenheim", "Carnap", "Nagel", "Popper", "Wittgenstein", "Kuhn", "Toulmin"], "method": "了解后实证主义后，在阅读量化研究时要问：这项研究的法则主张是普遍的还是情境性的？其因果叙述是否混淆了机制与条件？", "note": "", "related": ["Crotty positivism 1998", "Bennett D 2009", "Lincoln et al 2011"], "quotes": [{"text": "Hempel & Oppenheim: social science should also use general laws + deduction to explain and predict. E.g., human self-interest → leisure preference → generous welfare → not working. But the premise implicitly contains value judgments.", "src": "Baronov (2012, p.52)"}, {"text": "Wittgenstein's language games: word meanings depend on context of use, there is no universal semantics — a structural shock to logical positivism, because its verification principle itself requires a universal descriptive language, which does not exist.", "src": "Baronov (2012, p.61)"}, {"text": "Fallibilism (critical optimists): knowledge is limited but progress is possible. Rationality is making competing claims answer to each other; what we get is a temporary best solution, not certainty. How do we distinguish a genuinely better answer from a merely stronger one?", "src": "Baronov (2012, pp.67–68)"}]}, {"id": 8, "author": "Moran, D.", "year": "2000", "title": "Introduction to Phenomenology [Introduction]. Routledge.", "themes": ["phenomenology"], "summary": "现象学作为哲学实践方式（zu den Sachen selbst——回到事物本身）的系统导论。梳理胡塞尔的核心概念（意向性/悬置/还原/给予性/生活世界），Heidegger的三重断裂（历史性/事实性/时间性，解释学优先，反egology），以及Sartre、梅洛-庞蒂、Levinas、Derrida的延伸方向。Moran的贡献在于：将现象学呈现为家族相似性实践而非统一教义，强调其内部张力和发展脉络，批判将现象学误读为主观内省主义。", "keyArgs": [{"term": "意向性与Noesis-Noema结构", "exp": "脑子里不可能空转：只要在想/看/怕/记，就一定是在想某个东西，把它当成某种样子。意向行为（noesis）指向意向相关物（noema）。先看（看到什么），再考虑其真实性——这与实证主义的观察顺序形成张力。"}, {"term": "悬置（Epoché）与给予性", "exp": "给予性：经验以某种方式被给予（modes of givenness）。悬置：暂停自然态度，像陪审团被要求只看台面上的证据，不采信庭外信息。现象学任务是描述这些给予方式，只就其如何被给到来加以接纳。"}, {"term": "Heidegger的三重断裂", "exp": "①历史性/事实性/时间性：人不只有内在时间意识，还有身世背景、既定处境、面向未来；②解释学优先：纯粹中性描述是幻象，我们总有前理解；③Anti-egology：从意识学转向此在（Dasein）的在世存在（Being-in-the-world）。"}, {"term": "梅洛-庞蒂的身体意向性", "exp": "身体本身就带着朝向某物的指向性：运动性就是原初意向性（la motricite est l'intentionnalite originaire）。知觉行为和所处环境相互依存、彼此嵌入。人和世界是交错相连的关系，解不开的互相缠结。"}, {"term": "Levinas的伦理化现象学", "exp": "不是我如何把世界当作对象，而是他人如何先来要求我。伦理先于存在论。陌生人突然不适，下意识起身搀扶——这个被召唤的瞬间不是先认知再计算，而是一种先行的责任关系在动。"}], "questions": ["Epoché在实际操作层面能真正实现吗？意识离不开其意向相关物，总是裹挟在世界里，这是否使纯粹的先验还原成为不可能？", "现象学与维也纳学派的根本张力：前者描述意向结构的给予性，后者要求可验证命题。这两种知识取向能对话吗？", "Derrida如何通过差延动摇现象学作为方法的稳定性？这对质性研究的方法论基础意味着什么？"], "thinkers": ["Husserl", "Heidegger", "Sartre", "Merleau-Ponty", "Levinas", "Derrida", "Brentano"], "method": "现象学方法论的核心贡献：提供了一种描述经验结构的方式，关注主观性如何参与使客观性成立。这对访谈研究和现象学质性方法有直接意义。", "note": "现象学不是内省主义——它研究如何被给予的严格描述，而不是沉溺于主观感受。", "related": ["Burr 1995", "Crotty Ch.1 1998", "Bennett J 2010"], "quotes": [{"text": "Zu den Sachen selbst — back to the things themselves. Phenomenology is not a unified doctrine, but a family of similar practices 'following the things themselves'. It retains subjectivism at the core of epistemology and worldview: objectivity-for-subjectivity.", "src": "Moran (2000, p.4)"}, {"text": "Noesis–Noema: the mind cannot 'run idle' — whenever thinking, seeing, fearing, remembering, one is necessarily about something, taking it as something. See first, then consider whether it is real.", "src": "Moran (2000, p.14)"}, {"text": "Epoché: like a jury instructed to temporarily disregard information outside the court, only looking at the evidence on the table; combined with eidetic and transcendental reduction to pull out the structure and elements of the phenomenon being studied.", "src": "Moran (2000, p.12)"}, {"text": "la motricité est l'intentionnalité originaire — motility is originary intentionality (Merleau-Ponty). The body itself carries a basic directionality 'toward something'. Perception and environment are mutually dependent, entwined together.", "src": "Merleau-Ponty, cited in Moran (2000, p.416)"}, {"text": "'It is a matter of describing, not of explaining or analysing ... [this] is from the start a foreswearing of science.' Science is a second-order expression built upon direct experience.", "src": "Merleau-Ponty, Phenomenology of Perception, Preface; cited in Moran (2000)"}, {"text": "Levinas: not 'how I take the world as an object', but 'how the other comes to demand of me first'. Ethics before ontology. That moment of being-called — early morning on the subway, a stranger suddenly unwell, you instinctively rise to help — this is not cognition then calculation, but a prior responsibility relation already at work.", "src": "Levinas, cited in Moran (2000); 笔记整理"}]}, {"id": 9, "author": "Burr, V.", "year": "1995", "title": "What is Social Constructionism? [Introduction]. Routledge.", "themes": ["constructionism"], "summary": "社会建构主义的家族相似逻辑：以四个关键假设（批判习以为常的知识/历史文化特定性/知识由社会过程维系/知识-行动同构）作为松散但可识别的共同特征。梳理从Mead的互动论、Berger & Luckmann的社会现实建构，到Gergen的北美传统和Foucault-话语心理学的英国传统。核心认识论立场：知识不是直接照见世界的镜子，而是在人际互动（尤其是语言实践）中协商出来的，因此是历史性的和可变的。", "keyArgs": [{"term": "四个关键假设（家族相似特征）", "exp": "A.批判习以为常的知识：反对认为客观无偏的观察能直接揭示世界本性；B.历史文化特定性：当下常识带时间戳和文化坐标；C.知识由社会过程维系：日常互动就是共同版本的知识被制造/维持的过程；D.知识-行动同构：不同的建构引导不同的行动/政策。"}, {"term": "反本质主义与反实在主义", "exp": "反本质主义：没有写死在人或事物里的固定本质；我们看到的样子，多是社会过程塑出来的。反实在主义：知识不是直接照见世界；我们在人际互动中建构出各自版本的现实。这不是否认差异存在，而是强调差异的制度化是社会过程的结果。"}, {"term": "语言即行动", "exp": "说话不只是表达内心，而是在做事：定位、承诺、归责、召唤、划界。话语心理学（Potter, Wetherell等）：账目（accounts）是为实现社会目标而建构的，而非对内心事件的被动再现。"}, {"term": "Berger & Luckmann的三步", "exp": "外化（externalisation）：人把想法/做法推出去成为公共对象；客观化（objectivation）：这些说法/物件进入公共领域被反复转述，变成独立于个人的客观现实；内化（internalisation）：后来者出生在已有的世界里，把它当自然，内化为自己的理解。"}, {"term": "真理等于稳定下来的共同版本", "exp": "我们当下视为真的东西是社会互动的产物，而不是对世界客观观察的产物。它随历史/文化而变。改变话语/定义，就是改变政策工具。"}], "questions": ["宽口径定义（家族相似逻辑）的代价：边界模糊，容易被批评什么都能算建构，实证可检性下降。这是致命缺陷还是有意的理论开放性？", "如何区分话语建构与生物/物质现实？社会建构主义如何处理身体疾病、物理障碍等不能被话语完全解构的现实？", "后现代/后结构主义倾向拆解一切大叙事——这是否有动摇女性主义、批判理论的政治锋利度的风险？"], "thinkers": ["Gergen", "Mead", "Berger", "Luckmann", "Potter", "Wetherell", "Foucault", "Wittgenstein", "Harre"], "method": "社会建构主义为话语分析、会话分析、叙事分析、民族志等方法提供认识论基础。关键操作：把研究对象从实体转向过程——不问X是什么，而问X是如何被做出来的。", "note": "", "related": ["Moran 2000", "Berbary 2017", "Crotty Ch.1 1998"], "quotes": [{"text": "Social constructionism has no unified definition; it is a collection of family resemblances. Four key assumptions: (A) critical stance toward taken-for-granted knowledge; (B) historical and cultural specificity; (C) knowledge is sustained by social processes; (D) knowledge and social action go together.", "src": "Burr (1995, pp.3–5)"}, {"text": "'Truth' = a stable, shared version (changeable). What we currently regard as 'true' is a product of social interaction, not purely objective observation of the world. Changing discourse/definitions is changing policy tools.", "src": "Burr (1995, p.7)"}, {"text": "Language as social action: speaking is not only 'expressing the inner', but doing things: positioning, committing, attributing, summoning, demarcating. Accounts are constructed to achieve social goals, not passive re-presentations of 'inner events'. Nothing outside the text.", "src": "Burr (1995, pp.9–10); Potter & Wetherell"}, {"text": "Berger & Luckmann: externalisation → objectivation → internalisation. Those born later enter a ready-made world, take it as natural, internalise it as their own understanding.", "src": "Berger & Luckmann (1966), cited in Burr (1995, p.13)"}]}, {"id": 10, "author": "Crotty, M.", "year": "1998", "title": "Critical Inquiry [Ch. 6 & 7]. The Foundations of Social Research. SAGE.", "themes": ["critical"], "summary": "批判性研究从理解走向质疑/挑战/促成变革：情境不再是互动/共同体，而是冲突/压迫。系统介绍马克思的基础-上层建筑结构、意识形态批判与劳动异化理论，到法兰克福学派（Horkheimer的传统vs批判理论区分、Adorno的否定辩证法），再到Habermas的三类认识利益和交往行为理论，最后是Freire的解放教育（conscientização）。批判理论的规范性基础不靠超越形而上学的价值，而靠日常语言的必然预设。", "keyArgs": [{"term": "传统理论vs批判理论（Horkheimer）", "exp": "传统理论：反映和再现现实，服务于现状；批判理论：改变现实，揭露意识形态，避免理论蜕变为意识形态的辩护工具。这一区分是法兰克福学派的核心立场宣言。"}, {"term": "劳动异化（Entfremdung）", "exp": "自我异化：劳动成为谋生手段而非自我实现；物的异化：劳动产品与生产者分离成为对立力量；人与人的异化：前两种异化外溢为社会关系的敌对化。把个体困境回接到劳动过程与社会关系的结构分析。"}, {"term": "Adorno的否定辩证法", "exp": "对同一化思维的总攻：反对把他者同一化为自我，反对用概念完全捕获现实。通过概念的星丛（constellation）来照亮对象，而非用单一概念定义对象。放弃对世界彻底掌控的欲望。"}, {"term": "Habermas的三类认识利益", "exp": "技术兴趣→经验-分析科学（控制自然）；实践兴趣→历史-诠释科学（相互理解）；解放兴趣→批判科学（精神分析/意识形态批判，实现自我反思与解放）。三类利益不可化约，解放兴趣不能被技术理性吞并。"}, {"term": "Freire的conscientização", "exp": "解放教育：Problem-posing（提出问题）与去神话化。废除师生二分：研究与教学合一；反思-行动-再反思（praxis）的持续实践。沉默文化：被压迫者内化压迫者形象。"}], "questions": ["社会研究如何在不自觉中复制统治阶级的意识形态？如何设计能够揭示而非掩盖这种复制的研究？", "Adorno的否定辩证法是否使批判理论陷入纯粹的否定而无法提供建设性方向？这是否是其内在局限？", "Freire的解放教育在高度消费主义/数字化的社会中如何落地？解放的第一步是什么？", "批判理论的解放承诺：谁来判断什么是真正的解放？这是否会产生新的精英主义？"], "thinkers": ["Marx", "Engels", "Horkheimer", "Adorno", "Habermas", "Marcuse", "Benjamin", "Freire"], "method": "田野和文本分析需要连接回支配/剥夺的结构。可以建立意识形态/话语编码本：谁被静音？哪些概念将结构问题个体化？", "note": "革命性的社会变革作为研究目标——这是否与学术的客观性要求根本冲突？", "related": ["Melamed 2015", "Bailey et al 2023", "hooks 1991", "Ladson-Billings 1998", "Berbary forthcoming"], "quotes": [{"text": "Traditional theory reflects and reproduces reality, while critical theory changes reality. Theory risks becoming a tool of ideology — critical theory must avoid this denaturing.", "src": "Horkheimer (1937); cited in Crotty (1998, p.152)"}, {"text": "Alienated labour: labour becomes a means of making a living rather than self-realisation; the alienation of the object; the alienation of people from each other — spills over into hostility in social relations; total dehumanisation: the proletariat are 'stripped even of the appearance of being human'.", "src": "Marx; cited in Crotty (1998, pp.154–155)"}, {"text": "Habermas — Knowledge and Human Interests (1968): human experience is guided by cognitive interests corresponding to technical, practical, and emancipatory knowledge/action. The normative basis of critical theory lies not in transcendent metaphysical values, but in the necessary presuppositions of everyday language.", "src": "Habermas (1968); cited in Crotty (1998, p.157)"}, {"text": "Freire: Conscientização — problem-posing and demythicisation. Generating intersubjective dialogue and joint action. Reflection and praxis: the oppressed internalise the image of the oppressor — the 'culture of silence'.", "src": "Freire; cited in Crotty (1998, p.166)"}, {"text": "Social research can unknowingly replicate the ideology of the ruling class. Materials disposal: building an ideological/discourse codebook — who is silenced? Which concepts individualise structural problems?", "src": "Crotty (1998, p.158); 笔记整理"}]}, {"id": 11, "author": "Tynan, L.", "year": "2021", "title": "What is relationality? Indigenous knowledges, practices and responsibilities with kin. Cultural Geographies, 28(4).", "themes": ["indigenous"], "summary": "以第一人称探究关系性（relationality）作为原住民知识实践核心的本体论意义：关系不能被提取或时间限制。All things are kin。土地、天空、火、水都是关系存在，不是资源或分析对象。反对extractivism：研究不应追求效率而提取，原住民不应成为被收割的对象。知识主权问题：谁受益、如何共同作者、谁持有叙事权力和数据/知识主权。拆解专家化：大学训练本身构成提取主义，制度改革路径依然不足。", "keyArgs": [{"term": "关系性作为生命力", "exp": "原住民关系性被视为生命力（life force）：支持并滋养生命。不是分析工具，而是存在方式本身。关系性视角连接而非分类——与他者连接的首要性：你与谁以及与什么地方相连？"}, {"term": "他者化切断原初连接", "exp": "当人与物成为他者（the Other），就切断了原初连接——这是去人化（dehumanisation）的过程。人类与万物是一体，Caring as Country。天空中的仪式/凝望是桥接实践；火的照护是关系实践。"}, {"term": "守护关系（stewardship）", "exp": "将自然视为亲属而非资源。守护是伦理关系，带有互惠-责任-原住民性三位一体的义务。知识的获取必须回应这种守护关系，否则就是提取主义。"}, {"term": "知识主权的四问", "exp": "谁受益（who benefits）？如何共同作者（how do we co-author）？谁持有叙事权力（who holds narrative power）？谁持有数据/知识主权（data/knowledge sovereignty）？这四个问题应内嵌于任何涉及原住民社区的研究设计。"}, {"term": "拆解专家化", "exp": "大学训练方法本身构成一种提取主义。知识主权、关系必须被纳入仪式、必须被实践。制度改革路径至今仍不充分。"}], "questions": ["关系性是现实本身吗？从本体论视角，这不是经验结论而是形而上前提——关系与现实是否有可区分的边界？", "责任和义务是关系性的核心，但性别化和代际性负担未被充分处理——如何避免在强调集体责任时道德化女性和长者的无偿照护劳动？", "大学研究体制与关系性原则之间的张力如何解决？是否只能在体制内找到有限的实践空间？"], "thinkers": ["Tynan", "Dudgeon", "Bray", "Young"], "method": "在涉及原住民社区的田野研究中，关系性问责不只是伦理表态，而是研究方法的核心承诺。需要预先设计知识主权的归属和数据主权的保护机制。", "note": "", "related": ["Wilson 2008", "Smith 2012", "Kimmerer 2013", "Rosiek et al 2020"], "quotes": [{"text": "Dudgeon and Bray explain that 'Indigenous relationality is recognised as the life force, and that which supports and nourishes life'. All things are kin. The relational perspective connects rather than categorises. To whom and to what place are you connected?", "src": "Dudgeon & Bray, cited in Tynan (2021, p.599)"}, {"text": "Relationships cannot be extracted or time-bound. To research within relationships requires setting aside temporal scales. When people and things become the Other, it severs original connections — dehumanisation.", "src": "Tynan (2021, p.600)"}, {"text": "Consider: Who benefits? How do we co-author? Who holds narrative power and data/knowledge sovereignty? Indigenous peoples must not become objects to be harvested. Research must not pursue so-called efficiency at the expense of quality.", "src": "Tynan (2021, p.605)"}, {"text": "Recognise that university training methods constitute extractivism; institutional reform pathways remain inadequate. Indigenous culture and intellectual property: relationships must be gathered into ritual, must be practised.", "src": "Tynan (2021, p.607)"}]}, {"id": 12, "author": "Kimmerer, R. W.", "year": "2013", "title": "Braiding Sweetgrass [Selected excerpts]. Milkweed Editions.", "themes": ["indigenous"], "summary": "科学x传统知识x个人叙事的编结（braiding）：不是简单的相加，而是像编辫子一样需要对拉的张力。核心命题：Name vs Song——命名（科学分类）是开始，不是终点；歌代表故事/用法/关系/礼仪，是关系性知识的完整形态。Two-Eyed Seeing（双眼看世界）跨知识伦理：科学有效但窄（只用mind-body两维度），需要四重认知（mind-body-emotion-spirit）的完整性。人与植物的相互照亮（reciprocity of radiance）。", "keyArgs": [{"term": "编辫子隐喻（braiding）", "exp": "需要三股，需要对拉的张力：科学x传统知识x个人叙事。互惠（reciprocity）是整个认识论框架的伦理核心：不是单向的提取，而是相互给予。向读者提出参与式邀请——阅读本身被重新定义为一种关系实践。"}, {"term": "Name vs Song", "exp": "命名（scientific taxonomy）只是关系的开始，不是终点。歌（song）代表故事、用法、关系、礼仪——一种关系性的、历时性的知识形态。知识的厚度来自与地方的长期互惠，而非只在实验室的去关系化分析。"}, {"term": "两种美的认识论", "exp": "科学能解释注意力为何被抓取（互补色、后像、蜜蜂视觉与授粉机制），但若把情感与灵性排除，就看不见美的意义。机制之美（功能性）vs 关系之美（伦理性）：二者并非互斥，而是互补的认识层次。"}, {"term": "Two-Eyed Seeing", "exp": "一只眼看西方科学（有效但窄），另一只眼看原住民传统知识（关系性、整体性）。四重认识（mind-body-emotion-spirit）vs 科学的双维度（mind-body）。单通道认识的局限：只用科学，容易把名（name）当终点，听不到歌（song）。"}, {"term": "互惠作为行动伦理", "exp": "不是被动欣赏，而是以实践回应：写作/教学/修复生态/改变制度。植物的reciprocity：彼此的光辉照亮彼此的美。行动上的回礼（gifting back）是这种互惠的实践形态。"}], "questions": ["科学的解释力与传统知识的关系性能否真正编结，还是永远存在根本性张力？编辫子只是一个美好的隐喻，还是可操作的方法论？", "方法可以多元（两只眼睛看），但世界究竟是一个（共同地球）还是多个（多元本体）？这个张力如何解决？", "如何在研究实践中实践Two-Eyed Seeing而不将传统知识降格为对科学的点缀/装饰？"], "thinkers": ["Kimmerer", "Ermine", "Battiste", "Cajete"], "method": "在研究设计中，问自己：我只用了哪只眼睛？哪些知识形态被我排除了？如何在保持科学严谨性的同时纳入关系性知识？", "note": "Sweetgrass的嗅觉记忆：科学分类（名）与原住民语言（歌）两种知道的方式——这个对比在实验室和田野之间产生了巨大的认识论落差。", "related": ["Wilson 2008", "Tynan 2021", "Hockert 2020", "Rosiek et al 2020"], "quotes": [{"text": "Sweetgrass, olfactory: two ways of 'knowing' — scientific classification and Indigenous language. Braiding requires tension between strands. Reciprocity is the ethical core. Reading is redefined as a relational practice, not one-way reception.", "src": "Kimmerer (2013); 笔记整理"}, {"text": "Name vs Song: naming is the beginning, not the end; 'song' represents story, use, relationship, ceremony. The depth of knowledge comes from long-term reciprocity with a place, not just de-relationalised laboratory analysis.", "src": "Kimmerer (2013, pp.35–37)"}, {"text": "Two-Eyed Seeing: four-fold knowing (mind–body–emotion–spirit) vs. science's two-dimensional approach (mind–body). Science is effective but narrow; if emotion and spirit are excluded, the meaning of beauty and the relationship between humans and plants become invisible.", "src": "Kimmerer (2013, pp.48–50)"}, {"text": "The limitation of single-channel knowing: using only mind–body to read the world, one easily mistakes 'name' for the endpoint, unable to hear the 'song'. Action as reciprocity: not passive appreciation, but responding in practice.", "src": "Kimmerer (2013, pp.52–53); 笔记整理"}]}, {"id": 13, "author": "Corntassel, J.", "year": "2012", "title": "Re-envisioning resurgence: Indigenous pathways to decolonization. Decolonization: Indigeneity, Education & Society, 1(1).", "themes": ["indigenous"], "summary": "区分两条截然不同的路径：①国家认可的自治——资金/KPI/项目/指标驱动，是制度改革逻辑；②土地与关系根植的复兴——从日常实践中涌现，强调责任先于权利。核心命题：可持续自决（sustainable self-determination）是关系的持续再生产，需要语言活力/代际传承/食物/土地/时间分配等维度的综合再生。代际传承（Generation after generation!）是最强调的核心。", "keyArgs": [{"term": "两条路径的根本差异", "exp": "路径一：国家认可的自治——与国家谈判，获得资金和制度认可，但被KPI/绩效/项目目标所捕获；路径二：土地与关系根植的复兴——不是等待国家许可，而是从日常实践出发，恢复语言/仪式/记忆/历史/叙事/领土。"}, {"term": "可持续自决的核心要素", "exp": "语言活力；代际传承与支持；食物/土地/时间分配；关系的持续再生产（不是一次性成就，而是每一代都要不断再生产）。语义转换：从权利（rights）到责任（responsibilities）。"}, {"term": "四个陷阱（pitfalls）", "exp": "①咨询（consultation）不等于同意（consent）；②表演（performance）胜过生计（livelihood）；③社区叙事被他人（NGOs/专家）操控；④冲突被治理化，主权/土地回收被搁置。这四个陷阱使表面上的复兴运动被系统吸收。"}, {"term": "代际责任的中心性", "exp": "Generation after generation! 是文章中最强调的概念。复兴不是单代人的成就，而是需要建立跨代际的传承机制。这意味着什么样的研究时间尺度？如何触发和调整机制？"}, {"term": "回归根本文化", "exp": "不是宏大的政治叙事，而是回到自己的根（土地）。建立向外的横向网络，但不牺牲自身利益。关系-生态-文化是一体的，评估标准强调可持续性和可再生性。"}], "questions": ["复兴（resurgence）是否等于去殖民化（decolonization）？两者关系是否存在层级？", "当责任取代权利成为核心框架时，是否存在道德负担化的风险：尤其当资源稀缺时，谁来承担结构性成本？这个成本是否不成比例地落在女性和长者身上？", "微观复兴实践（日常语言/食物/仪式）如何转化为宏观维度（土地归还/财政资格/权利分配）？"], "thinkers": ["Corntassel", "Simpson", "Alfred", "Coulthard", "Fanon"], "method": "去殖民研究不只是方法问题，而是本体论-伦理-政治的综合承诺。研究者需要反思：我的研究时间框架是否匹配代际变化的尺度？", "note": "Generation after generation！——这四个叹号是文章中最有力量的时刻。", "related": ["Smith 2012", "Wilson 2008", "Tuck & Yang 2012", "Bigby et al 2022", "Agbo & Grimwood 2024"], "quotes": [{"text": "Distinguishing pathways: 1) nationally sanctioned self-governance — funding, KPIs, projects, targets; 2) land- and relationship-rooted revival: emerging from daily practice, emphasising responsibility over rights/entitlement.", "src": "Corntassel (2012, p.88)"}, {"text": "Four pitfalls: 1) consultation ≠ consent; 2) performance trumps livelihood; 3) community narratives manipulated by others (NGOs and experts); 4) conflicts 'governance-ised', sovereignty/land reclamation shelved.", "src": "Corntassel (2012, p.92)"}, {"text": "Generation after generation!!!!! — the continuous reproduction of relationships: linguistic vitality, intergenerational support and transmission, food, land, time allocation. Greater emphasis on strengthening relationships rather than budgetary strength.", "src": "Corntassel (2012, p.95); 笔记强调"}, {"text": "The semantic shift from rights to responsibilities: the ethics of responsibility as the foundation. Relationship–Ecology–Culture: one entity. Metrics emphasise sustainability and reproducibility.", "src": "Corntassel (2012, pp.97–98)"}]}, {"id": 14, "author": "Bigby, B.C., et al.", "year": "2022", "title": "Place-based governance in tourism. In The Local Turn in Tourism. Channel View.", "themes": ["tourism", "indigenous"], "summary": "探讨地方性治理（place-based governance）如何将原住民本体论和认识论融入旅游研究与实践。介绍地方性合作探究方法论（place-based cooperative enquiry），通过隐喻和意象探索英语二元对立，指出地理景观具有叙事性和活力。批判旅游增长模式：在新自由主义/消费主义框架下，旅游构成剥削，需要去增长（degrowth）+去殖民的双重转向。提出原住民经济的可持续性与互惠原则作为替代路径。", "keyArgs": [{"term": "扩展认识论（extended epistemology）", "exp": "Wooltorton等：使用包含关系本体论的扩展认识论，其中知者与所知相连接。知者与所知不可分离——这是对实证主义客观性原则的根本挑战。"}, {"term": "旅游即地方性缺失", "exp": "旅游助长无地方性（placelessness）的创造：游客的流动性破坏了地方的意义密度。原住民语言通过命名和表达展现景观活力，而旅游体验倾向于将地方去语境化、商品化。"}, {"term": "原住民经济的核心原则", "exp": "可持续性（sustainability）与互惠（reciprocity）：土地与灵性世界的相互交换。这不只是环境保护话语，而是本体论层面的互惠关系——土地是有能动性的存在，而非人类经济活动的背景。"}, {"term": "去增长+去殖民双重转向", "exp": "批判旅游增长模式下的新自由主义/消费主义逻辑（这构成剥削）。替代方案：小规模生产+合作消费网络+多中心互联。去增长与去殖民不是两个独立议题，而是相互内嵌。"}, {"term": "地方嵌入性的治理哲学", "exp": "本地治理哲学与工具；人本中心；价值发展。地方嵌入（local embeddedness）+复数路径（plural pathways）：不强制一种模板，允许不同地方发展适合自身的治理方式。"}], "questions": ["如何应对大量多重归属（multiple affiliations）和弱联系（weak ties）对地方嵌入性治理的挑战？", "当社会经济概念（如互惠、可持续）进入项目-绩效-审计语境时，如何防止被主流发展话语重新管理？", "数字化是否应介入原住民社区治理？平台化的治理逻辑与地方嵌入性治理的原则是否根本冲突？"], "thinkers": ["Wooltorton", "Higgins-Desbiolles", "Bigby"], "method": "旅游研究中的去殖民转向需要方法论和认识论层面的同步调整：不只是研究原住民旅游，而是从原住民本体论出发重新理解旅游的存在论地位。", "note": "想起巴塞罗那居民对旅游的抵制——这是否就是地方嵌入性治理原则在欧洲语境中的体现？", "related": ["Corntassel 2012", "Agbo & Grimwood 2024", "Stinson et al 2022", "King et al 2023"], "quotes": [{"text": "A methodology of place-based cooperative enquiry (Wooltorton et al., 2020): 'uses an extended epistemology inclusive of a relational ontology, in which knower and known are connected' (2020: 920).", "src": "Wooltorton et al. (2020: 920), cited in Bigby et al. (2022, p.38)"}, {"text": "Indigenous languages demonstrate vitality through naming and expression, fostering modes of narrative, poetry and storytelling. Tourism contributes to the creation of the placeless and placelessness.", "src": "Bigby et al. (2022, pp.40–41)"}, {"text": "The key principles of Indigenous economies — sustainability and reciprocity: the mutual exchange between the land and the spiritual world. Critique tourism growth models under neoliberal/consumerist frameworks. This constitutes exploitation. Degrowth + decolonisation.", "src": "Bigby et al. (2022, pp.44–45)"}]}, {"id": 15, "author": "Hockert, E.", "year": "2020", "title": "On scientific fabulation: Storytelling in the more-than-human world.", "themes": ["indigenous", "poststructural"], "summary": "提出科学寓言（scientific fable）的概念：不是科幻小说，而是将科学与人文资源并用、理解多物种世界的真实方法。核心方法论姿态是Additive empiricism：不急着消除矛盾或给出答案，而是放慢（slow down）、并置（juxtapose）、增添多声部，让更多声音被听见。批判亚里士多德式开端-冲突-宣泄结构，倡导open-ended叙事：把叙事当作与问题长期共处的练习，而非寻找终点。", "keyArgs": [{"term": "Additive empiricism vs 减法逻辑", "exp": "减法：快速消除矛盾，提炼确定性结论；加法：放慢、并置、增添多声部，让更多声音被听见。方法论姿态——慢下来、复杂化、犹疑。这不是缺乏判断，而是一种伦理性的谦卑。"}, {"term": "创伤叙事的双重风险", "exp": "毁灭和绝望的框架会打击人的安全感和连结感，可能导致公众瘫痪而非行动。同时，童话式的简单善恶二元化会遮蔽生态危机的真实复杂性。需要在创伤承认和行动动员之间找到叙事平衡。"}, {"term": "原住民叙事实践", "exp": "故事延续知识和关系；多声部、多样性本身就是伦理；关系本体论扩展到包括动物、植物、岩石。Haraway的多物种叙事：科学寓言需要去二元善恶化，保留陌生性和多声部。"}, {"term": "拒绝亚里士多德式封闭结尾", "exp": "生态危机中不存在明确的终点。因果关系是盘根错节的，不能用一次性终点掩盖这种复杂性。把叙事当作与问题长期共处的练习，注意力集中在持续的关系与care中。"}, {"term": "Melancholy作为生产性起点", "exp": "Glissant/Fanon：从伤痛处开始，把历史之痛转化为生产性的开端。Haraway：与麻烦共处（staying with the trouble）。Partial/Plural/Pragmatic/Participatory四P原则。"}], "questions": ["当前符号消费和故事简化（社交媒体字数限制、趣味化叙述）会不会反向影响我们想通过叙事唤醒认知的努力？", "Additive empiricism如何避免什么都纳入、但缺乏判断的相对主义？实践上如何设定纳入/排除标准？", "多物种叙事框架如何应用于藏族地区研究（人-动物-自然的共存关系）？"], "thinkers": ["Haraway", "Zylinska", "Despret", "Spivak", "Levinas", "Glissant", "Fanon"], "method": "在自己的定量研究发现基础上，叙事/故事可以成为传达气候/环境关切的有力补充。纯数据无法动员关切，需要通过共情和复杂叙事唤醒认知。", "note": "在关于球迷群体亲环境行为的定量研究发现中，叙事是必要的切入点，但故事疲劳（story fatigue）也是真实的障碍。", "related": ["Kimmerer 2013", "Rosiek et al 2020", "Bennett J 2010", "Tuck & Yang 2012"], "quotes": [{"text": "Additive empiricism vs. subtraction: not rushing to eliminate contradictions or provide answers, but slowing down, juxtaposing, adding multiple voices, allowing more voices to be heard. Worlding practice — methodological stance: slow down, complicate, hesitate.", "src": "Höckert (2020, p.55)"}, {"text": "'Trauma narratives' — how the public is paralysed rather than moved to action. Destruction and despair frameworks undermine people's sense of security and connection. The fairy-tale simple good-evil binary obscures the real complexity of ecological crisis.", "src": "Höckert (2020, pp.57–58)"}, {"text": "Refuse Aristotelian structure: 'beginning–conflict–catharsis'. In ecological crisis there is no clear endpoint. Causal relations are inextricably tangled. Treat narrative as a practice of 'long-term coexistence with problems'. Attention should focus on sustained relations and care.", "src": "Höckert (2020, p.62)"}, {"text": "Melancholy (Glissant/Fanon): starting from the place of pain, transforming historical pain into a productive beginning. Haraway: staying with the trouble. Partial / Plural / Pragmatic / Participatory.", "src": "Glissant; Fanon; Haraway, cited in Höckert (2020, pp.63–65)"}]}, {"id": 16, "author": "Valtchanov, B.L. & Parry, D.C.", "year": "in press", "title": "Feminisms and the sociology of leisure: Advancing a politics of hope, complexity, and radical care.", "themes": ["feminist", "leisure"], "summary": "以Dorothy Smith的社会学男性中心主义批判为起点，系统梳理女性主义视角在休闲社会学中的发展历程（从1960年代的不可见，到补偿性研究，到以女性为中心，到政治希望）。探讨父权制作为系统性分析工具、性别建构（doing gender）、交叉性（intersectionality）对休闲的塑造。提出政治希望（politics of hope）、复杂性（complexity）、激进关怀（radical care）三原则作为未来方向。", "keyArgs": [{"term": "Doing gender（West & Zimmerman）", "exp": "性别是被持续学习/实践/再生产（doing）的过程，不是固定本质。Gender是社会文化建构，通过心理/文化/社会手段实现。使用多元代词不是小题大做，而是迫使社会重新习惯不把性别当成理所当然的二分。"}, {"term": "父权制作为分析工具", "exp": "不是口号，而是对社会结构的描述：男性享有更高的资源获取/话语权/更少的约束。Part of the oxygen of life（Higgins）——难以被直接感知。父权制不等于所有男性都有权力：同性恋男性/贫困男性/被种族化的男性可能享受不到红利。"}, {"term": "Kimmel的反转命题", "exp": "不是差异导致不平等，而是不平等制造了差异（Kimmel, 2006）。父权社会先制造权力不对等，再用男女天生不同来正当化这个不对等。这是一个认识论上的根本反转——结构先于差异，而非差异导致结构。"}, {"term": "交叉性（Crenshaw 1989）", "exp": "压迫是同时发生的、彼此不可分割的整体，不是加法模型。Thornton Dill & Kohlman：压迫如何融合成特定样式出现。白人西方女性主义的批判：忽视殖民历史/土地剥夺/种族政治，原住民女性不一定认同女性主义标签。"}, {"term": "激进关怀（radical care）", "exp": "对研究对象/参与者的关怀，对研究者自己以及彼此的关怀。承认主观性/关系性/情感劳动，不再假装中立。研究是会伤人的（research hurts）——find your village。反对hustle culture和表演性的包容。"}], "questions": ["少数民族女性在景区的表演性微笑和民族服饰，到底是她们的休闲/自我表达，还是被市场和地方政府当作城市游客的观赏资源？她们有没有真正属于自己的闲暇？", "中国996/内卷对男性和女性的影响并不对称——如何在休闲研究框架中纳入这种不对称性？", "Lululemon在中国的文化影响：体型规范化和阶层化的身体政治如何在健身文化中运作？"], "thinkers": ["Smith", "Henderson", "Shaw", "Kimmel", "Crenshaw", "Hochschild", "hooks", "West", "Zimmerman"], "method": "女性主义方法论的五个共同点：研究不是中立的；personal is political；女性生活经验是知识来源；研究关系本身有价值；真理/客观性不是唯一/可能的终点（Thompson, 1992）。", "note": "民族地区的旅游：少数民族女性身体的浪漫化/异域化——是否有人在做关于这些女性的表演性微笑背后的劳动研究？", "related": ["Hesse-Biber 2007", "hooks 1991", "Lopez 2024", "Bailey et al 2023", "Taylor 2017"], "quotes": [{"text": "Gender: learning, practising, reproducing gender — a continuous process, doing gender (West & Zimmerman, 1987; Freysinger et al., 2013). Using multiple pronouns is not making a fuss — it forces society to re-learn not taking gender as a self-evident binary.", "src": "West & Zimmerman (1987); Freysinger et al. (2013); Valtchanov & Parry (in press)"}, {"text": "Patriarchy is a highly effective analytical tool — not a slogan, but a description of social structure. 'Part of the oxygen of life' (Higgins, 2018) — difficult to touch. Patriarchy does not mean power and status for all men.", "src": "Higgins (2018), cited in Valtchanov & Parry (in press)"}, {"text": "Michael Kimmel (2006): not 'difference leads to inequality', but 'inequality produces difference'. Patriarchal society first creates power asymmetry, then uses 'men and women are naturally different' to legitimate that asymmetry.", "src": "Kimmel (2006), cited in Valtchanov & Parry (in press)"}, {"text": "Intersectionality (Crenshaw, 1989): oppression is simultaneously occurring and indivisible as a whole — the additive model. How oppression 'fuses into particular patterns' — challenge. White Western feminism: ignoring colonial history, land dispossession, violence and racial politics.", "src": "Crenshaw (1989); Thornton Dill & Kohlman (2012); cited in Valtchanov & Parry (in press)"}, {"text": "Radical Care: caring for research subjects/participants, for the researcher herself, and for each other. Acknowledging subjectivity, relationality, emotional labour — no longer pretending to be neutral. Research hurts — find your village.", "src": "Valtchanov & Parry (in press)"}]}, {"id": 17, "author": "Hesse-Biber, S.N.", "year": "2007", "title": "Feminist research: Exploring the interconnections of epistemology, methodology, and method. In Handbook of Feminist Research. SAGE.", "themes": ["feminist"], "summary": "通过Harriet Jacobs的奴隶叙事、Virginia Woolf的知识空间批判、de Beauvoir的他者分析、bell hooks的理论实践观，建立女性主义认识论的谱系。系统区分女性主义经验主义、立场认识论（standpoint epistemology）和后现代/后结构主义女性主义的认识论主张与方法论含义。中心论点：女性主义研究不只是把女人塞入样本，而是重写什么叫知识、谁能知道、如何知道。", "keyArgs": [{"term": "立场认识论（standpoint epistemology）", "exp": "Marx的阶级分析延伸：被压迫者对权力结构有更深的洞察，因为必须理解压迫者的系统才能生存。Who can know? / What can be known? 最大贡献：把压迫位置的主体经验定义为知识起点，而非主观抱怨。"}, {"term": "Situated knowledges（Haraway）", "exp": "主流科学的上帝把戏（the god trick）：假装从无处看一切（view from nowhere），其实是特权位置的隐形。真正诚实的客观性不是假装无立场，而是公开承认位置。Partial/situated/power-imbued/relational的知识才能强迫研究者承担责任。"}, {"term": "Strong objectivity（Harding）", "exp": "要求研究者进行强烈的自我反思，包括研究议题从哪里来、谁受益、谁被排除。Context of discovery（发现语境）同样需要批判性审查，不只是justification（辩护语境）。"}, {"term": "沙洲（sandbar）隐喻", "exp": "研究者的位置是流动的、非常脆弱的：任何选择都有风险。持续地连接、断开、再连接。差异不是要消灭的，而是需要在其中生存/谈判/结盟/行动的条件本身。边缘是抵抗与创造的空间。"}, {"term": "女性主义访谈法的特殊性", "exp": "倾听沉默：倾听未说出口的内容（subjugated knowledge）。访谈应具有reciprocity：知识生产的合作者，而非单向提取。升格个人经验为研究对象；praxis必须从研究一开始贯穿而非事后加入。"}], "questions": ["当西方女性主义者代表第三世界女性发言时，代表行为本身是否再次让对方失语？如何区分团结（solidarity）和代言（speaking for）？", "交叉性的全球化应用：如何在不挪用的前提下，建立跨地区的认识论对话而不建立在抹杀差异上？", "后结构主义批评者（Butler）说：如果你坚持女性是什么，你还是在本质化——女性主义如何在解构本质的同时保持政治锋利度？"], "thinkers": ["Jacobs", "Woolf", "de Beauvoir", "Friedan", "Smith", "Anzaldua", "hooks", "Lorde", "Harding", "Haraway", "Spivak", "Butler"], "method": "女性主义研究praxis：把女性主义视角直接放进研究过程本身，而非作为事后的伦理审查。包括：reflexivity；reciprocal访谈；倾听沉默；升格个人经验为研究对象。", "note": "谁被听见？谁被压下？如何把被压抑的经验带回知识中心？如何用这些经验改变整个社会结构？", "related": ["Valtchanov & Parry", "hooks 1991", "Taylor 2017", "Berbary 2017"], "quotes": [{"text": "Harriet Jacobs (1861/1987): 'pit of abominations' — only those who have lived through it know slavery. Personal experience is testimony; testimony is a political instrument. The epistemological foundation: the experiences of the oppressed are not 'subjective noise' but a source of knowledge.", "src": "Jacobs (1861/1987), cited in Hesse-Biber (2007, p.3)"}, {"text": "Dorothy Smith (1978): the systematic exclusion of women from knowledge production. The 'circle' of knowledge is written by men for men. Standpoint epistemology.", "src": "Smith (1978), cited in Hesse-Biber (2007, p.7)"}, {"text": "Haraway — the god trick: mainstream science pretends to view everything from nowhere (view from nowhere), actually the invisibility of a privileged position. True honest 'objectivity' is not pretending you have no position, but openly acknowledging it. Partial, situated, power-imbued, relational.", "src": "Haraway (1988), cited in Hesse-Biber (2007, pp.12–13)"}, {"text": "Strong objectivity (Harding, 1993): requiring strong self-reflexivity from researchers — the context of discovery is also subject to critical examination, not only the context of justification.", "src": "Harding (1993), cited in Hesse-Biber (2007, p.14)"}, {"text": "Sandbar metaphor: this position is fluid, very fragile, because any choice has risks. Continuously connecting, disconnecting, reconnecting. Difference is not to be eliminated, but the very condition in which one must learn to survive, negotiate, ally, and act.", "src": "Hesse-Biber (2007, pp.18–19)"}, {"text": "Feminist interviewing: listening to silence — listening to what is not said. 'You know' — subjugated knowledge. Interviews should have reciprocity. 'Upgrade the personal as an object of study'. Praxis from the beginning, not as an afterthought.", "src": "Hesse-Biber (2007, p.22)"}]}, {"id": 18, "author": "hooks, b.", "year": "1991", "title": "Theory as liberatory practice. Yale Journal of Law and Feminism, 4(1).", "themes": ["feminist", "critical"], "summary": "个人陈述：因为受伤才走向理论——不是冷冰冰的抽象，而是因为痛苦太强烈、活不下去，迫切需要理解发生了什么，让痛消失。理论是疗愈（healing）、恢复（recovery）、解放（liberation）的生存实践。批判女性主义内部的智识阶级层级：这是统治政治（politics of domination）在女性主义内部的再现。解放性理论的标准：必须大众可参与、口头可流通、能推动变革——在监狱、黑人餐馆、社区里流通。", "keyArgs": [{"term": "理论作为生存实践", "exp": "不是因为学术训练而走向理论，而是因为痛苦迫切需要理解。理论是疗愈的地点（site of healing）。这将理论的起点从特权的认识论游戏转向生存的迫切需要——谁需要理论？那些受伤的人。"}, {"term": "知识的集体源头", "exp": "女性主义理论不是单个明星学者的个人天才，而是经常从集体资源（collective sources）里生长出来。女性主义要有扩张式视野，挑战女人=白人中产异性恋女人的假设。"}, {"term": "沉默即共谋（complicity）", "exp": "拒绝理论只是让父权/种族主义/资本主义的理论占领头脑，不受挑战。理论永远在起作用，无论我们承认与否。沉默不是中立，而是一种共谋。"}, {"term": "解放性理论的流通条件", "exp": "必须在口头可流通：在社区、监狱、黑人餐馆里流通；必须能让人启动改变。抽象理论如果不能转化为日常实践，就失去了解放性。"}, {"term": "智识阶级层级批判", "exp": "女性主义内部的行动>理论二元对立：贬低理论工作，认为只有行动才是真正的女性主义。这是统治政治在内部的再现，攻击了挣扎中的女性脆弱心理，加剧而非消除了不平等。"}], "questions": ["如何在精英学术与大众可参与之间架桥，而不降低理论的复杂性？", "沉默本身在哪些情况下是正当的，哪些情况下是共谋？这条线在哪里？", "lifestyle-based feminism（仅停留在个人生活选择层面）与politicized revolutionary feminist movement的区别是什么？什么让后者更有力量？"], "thinkers": ["hooks", "Freire", "Audre Lorde", "de Beauvoir", "Combahee River Collective"], "method": "在研究写作中，问自己：这个理论在谁那里流通？谁能读懂/使用它？理论的可及性本身是一个政治问题，不只是表达风格问题。", "note": "因为受伤才走向理论——这个起点让理论不只是认识论工具，而是生命实践。这改变了我对理论工作意义的理解。", "related": ["Taylor 2017", "Hesse-Biber 2007", "Crotty critical 1998", "Berbary forthcoming"], "quotes": [{"text": "It was 'because of hurting' that she turned to theory — not cold abstraction, but because the pain was too intense, she 'urgently' needed to understand what had happened. She says she 'saw a site of healing in theory'. Theory is for healing, recovery, liberation.", "src": "hooks (1991, p.1)"}, {"text": "Feminist theory is not the personal genius of individual star scholars, but frequently grows from 'collective sources'. Feminism needs an 'expansive perspective' — challenging the assumption that 'woman = white, middle-class, heterosexual woman'.", "src": "hooks (1991, pp.3–4)"}, {"text": "Silence is complicity. Refusing to 'acknowledge' theory simply lets patriarchy/racism/capitalism's theory occupy our minds, unchallenged. Theory is always at work, whether we acknowledge it or not.", "src": "hooks (1991, p.7)"}, {"text": "Intellectual class hierarchy is the reproduction of 'politics of domination' within feminism itself — the binary action>theory assaults the fragile psyches of women struggling to throw off patriarchy, aggravating rather than eliminating inequality.", "src": "hooks (1991, pp.8–9)"}, {"text": "Liberatory theory: it must circulate orally — in communities, prisons, Black restaurants; it must enable people to initiate change, including enabling imprisoned Black men to begin reflecting on and deconstructing their patriarchally-shaped gender views.", "src": "hooks (1991, pp.10–11)"}]}, {"id": 19, "author": "Lopez, S.", "year": "2024", "title": "[Feminist/critical race intersectional analysis].", "themes": ["feminist", "crt"], "summary": "交叉性女性主义与批判种族理论的整合分析框架。探讨种族、性别、阶级、性取向等多重压迫轴线在特定社会语境中的交织运作，以及这种交织如何具体地塑造边缘化群体（特别是有色人种女性）的休闲/旅游/日常生活经验。批判单一轴线分析的局限，强调多重身份的具体生活经验作为理论和实践的出发点。关键洞见：处于多重压迫交汇点的经验提供了独特的认识论视角，能够揭示主流分析所看不见的结构。", "keyArgs": [{"term": "多重轴线交织分析", "exp": "种族+性别+阶级+性取向等压迫轴线在具体生活中是同时运作的整体，而非可分别分析的独立变量。交叉性不是加法（不是1+1+1=3），而是各轴线相互构成的整体结构。"}, {"term": "有色人种女性的认识论特权", "exp": "处于多重压迫交汇点的经验提供了独特的认识论视角，能够揭示主流分析所看不见的结构。这不是情感化的个人经历，而是系统性的认识论资源。"}, {"term": "理论与实践的循环", "exp": "理论必须从实际生活经验出发；实践必须由理论指导；两者在具体斗争中不断循环生产新知识。这与Berbary的theorypractice和hooks的理论作为生存实践相互呼应。"}, {"term": "解放实践的双重要求", "exp": "既需要批判分析（揭示多重压迫的运作机制），也需要具体的集体行动和制度变革。分析不够，还需要组织、动员、结盟。"}], "questions": ["在不同文化语境（如中国、东南亚）中，交叉性框架如何被调适和应用？哪些轴线需要被调整？", "有色人种女性在旅游/休闲研究中的具体经验：她们的声音如何被系统性地排斥在主流研究议程之外？", "如何在研究设计中真正实现有色人种女性的认识论主体性，而不只是把她们作为研究对象？"], "thinkers": ["Crenshaw", "Collins", "Anzaldua", "Lorde", "hooks", "Davis"], "method": "在研究中，识别并明确说明多重压迫轴线如何同时运作于研究场域。避免单一轴线分析——不只看种族，也不只看性别，而是追踪它们的交织。", "note": "", "related": ["Valtchanov & Parry", "hooks 1991", "Crenshaw et al 1995", "Hesse-Biber 2007"], "quotes": [{"text": "The 'dirtiest, hardest work' — women of colour, intensified by industrialisation. 'Labouring bodies' — people become tools (Bhattacharya, 2017). The gender–labour adhesion: women become the 'default providers of care' (Tronto, 2013).", "src": "Glenn (1985); Bhattacharya (2017); Tronto (2013), cited in Lopez (2024)"}, {"text": "Not all bodies deserve to be seen by society (Mooers, 2003). Care confuses the boundaries between labour, leisure, and repair — no boundary. Genderacialisation. Invisible/Hypervisible double situation.", "src": "Mooers (2003); Lopez (2018; 2021), cited in Lopez (2024)"}, {"text": "Feminist and Critical Race Theory (CRT) + critical narrative inquiry + antenarratology. The body stores memory and emotion; many experiences cannot necessarily be expressed 'in words' (Young, 1997; Van der Kolk, 2015). Ante-narrative: attention to 'pre-narrative/unfinished story fragments' (Boje).", "src": "Young (1997); Van der Kolk (2015); Boje (2006), cited in Lopez (2024)"}]}, {"id": 20, "author": "Ladson-Billings, G.", "year": "1998", "title": "Just what is critical race theory and what's it doing in a nice field like education? IJQSE, 11(1).", "themes": ["crt"], "summary": "将CRT从法学界引入教育研究：聚焦课堂叙事、反律法主义（counter-legal）、counter-stories的力量。核心分析工具：Whiteness as Property（Harris：白性作为可排他/可享用/具地位声望的财产）；Interest-Convergence（Bell：政策转向往往出自利益汇合而非价值觉醒）；Curriculum master scripting（官方课程维护白人至上主剧本）。批判色盲与竞赛中立的教育话语，强调命名现实（naming one's reality）的力量。", "keyArgs": [{"term": "Whiteness as Property（Harris 1993）", "exp": "白性被建构为一种财产：可排他（exclusionary）、可享用（possessive）、具有地位声望。经济性：白人身份有可量化的物质和社会价值。在教育中体现为：谁的知识被视为正当知识，谁的经历被视为普遍经验。"}, {"term": "Interest-Convergence（Bell 1980）", "exp": "有色人种的政策获益往往出自白人利益与有色人种利益的汇合，而非出于对平等的价值承诺。例：Brown v. Board of Education被解读为当时符合美国在冷战中的国际形象利益。政策倡导需要识别这种利益结构。"}, {"term": "课程主剧本（master scripting）", "exp": "官方课程是维护白人至上主剧本的文化产物：只正当化白人/上层/男性话语，压制并扭曲其他群体的故事。结果：上升失败的罪咎被归于个人，而非结构性内容扭曲/机会差异。"}, {"term": "命名现实（naming one's reality）", "exp": "边缘群体的心理自保工具：能够识别并命名自己所经历的不公正，是克服dysconscious racism的第一步。Counter-stories不只是个人叙事，而是对抗主剧本的认识论实践。"}, {"term": "评估批判", "exp": "会不会做题不等于会不会生活。智力测评的历史：被用来正当化种族/阶级/性别的等级叙事。陈旧刻板印象通过评估体系被持续再生产——这是系统性种族主义的制度形态。"}], "questions": ["多元文化主义如何成为结构压迫去历史化/道德化的工具，反而维护了主剧本？", "CRT强调种族意识（race consciousness）——这与色盲（color-blind）的区别是什么？在实践中如何操作？", "学校去隔离（desegregation）常以对白人有利的方式推进——Bell的被牺牲的黑人儿童寓言在当代有何现实意义？"], "thinkers": ["Ladson-Billings", "Bell", "Harris", "Delgado", "Crenshaw", "Swartz", "Marable", "Williams"], "method": "CRT在教育研究中的应用：使用counter-stories作为数据；分析课程内容中的master scripting；检验Interest-Convergence逻辑在政策改革中的运作。", "note": "CRT在中国教育语境中是否有对话可能？差异性/去历史化的话语如何在中国教育政策中运作？", "related": ["Crenshaw et al 1995", "Melamed 2015", "Bailey et al 2023", "Berbary forthcoming", "Taylor 2017"], "quotes": [{"text": "Whiteness as Property (Harris, 1993): whiteness is constructed as a form of property — exclusionary, possessive, with status and prestige. The economic dimension: white identity has a quantifiable material and social value.", "src": "Harris (1993), cited in Ladson-Billings (1998, p.9)"}, {"text": "Interest-Convergence (Bell, 1980): the policy gains of people of colour often emerge from a convergence of white interests and the interests of people of colour, not from a commitment to the value of equality. E.g., Brown v. Board of Education.", "src": "Bell (1980), cited in Ladson-Billings (1998, p.10)"}, {"text": "Master scripting (Swartz, 1992): the official curriculum is a cultural product that maintains the white supremacist master script — only legitimating white/elite/male discourse, suppressing and distorting other groups' stories.", "src": "Swartz (1992), cited in Ladson-Billings (1998, p.13)"}, {"text": "Naming one's reality: the psychological self-protection tool of marginalised groups — being able to identify and name the injustice they experience is the first step in overcoming dysconscious racism (King, 1992). Counter-stories are not just personal narratives but an epistemological practice against the master script.", "src": "King (1992); Ladson-Billings (1998, p.15)"}]}, {"id": 21, "author": "Crenshaw, K., et al.", "year": "1995", "title": "Critical Race Theory: The Key Writings [Introduction]. The New Press.", "themes": ["crt"], "summary": "CRT的制度-政治发生背景：以法学院为基地，有色人种学者为主体的左翼学术运动。明确拒斥中立/客观的学术神话，强调学术必然是政治的。批判民权话语的加害者视角（perpetrator perspective）：把种族主义定义为有意识的个体偏见/差别对待，从而系统性地否认其结构性。色盲（color-blindness）意识形态：服务于机会平等/精英统治神话，回避对财富/教育/权力分布根本原因的追问。", "keyArgs": [{"term": "加害者视角（perpetrator perspective）批判", "exp": "Freeman：主流民权话语把种族主义定义为有意识的个体偏见或差别对待，这系统性地否认种族主义的结构性和制度性维度。结果：受害者被要求证明加害者的意图，而非证明系统性的不平等后果。"}, {"term": "色盲（color-blindness）意识形态批判", "exp": "声称不看种族/肤色以实现平等——但这服务于机会平等/精英统治神话，回避了财富/教育/权力为何如此分配的根本追问。被迫把平权行动辩护为例外/临时补救，而非正面承认种族类别的历史-结构现实。"}, {"term": "Antithetical knowledge（Said）", "exp": "CRT写作是介入式/对抗式写作，直接对抗建制知识。明确拒斥中立/客观的学术神话，知识生产即政治实践，没有中立的位置。"}, {"term": "自由派与保守派的共享框架", "exp": "两者都把种族主义理解为色盲的反面（即：种族意识=种族主义）。这一共享框架使得真正的结构性分析在主流政治话语中找不到位置——左和右在这个问题上共享了错误的前提。"}, {"term": "种族意识传统的复兴", "exp": "对20世纪六七十年代形成的主流民权话语的深刻不满：种族主义被视为偶发的/个体的/加害者导向的。CRT要复兴种族意识传统，对抗色盲成为开明常识后的去政治化，捍卫群体自决的激进视角。"}], "questions": ["CRT强调学术必然是政治的——这是否取消了学术严谨性的空间？政治性与严谨性如何共存？", "权利话语（rights discourse）的两面性：可能被工具化/去政治化，但也有赋权/再想象公民身份的历史-变革价值。CRT如何处理这个张力？", "CRT在美国法学-教育语境中发展出来，如何评估其在非美语境（如中国、全球南方）中的适用性与局限性？"], "thinkers": ["Bell", "Freeman", "Delgado", "Matsuda", "Williams", "Lawrence", "Harris", "Said", "Crenshaw"], "method": "CRT的方法论工具：counter-stories；种族意识分析；揭示Interest-Convergence；追踪白性作为财产的运作。在研究写作中，需要清楚说明自己的政治立场，而非假装中立。", "note": "自由派和保守派共享色盲框架这一发现，在阅读时产生了一种豁然开朗的感觉——这解释了为什么很多看似进步的政策实际上无法触及结构性种族主义。", "related": ["Ladson-Billings 1998", "Melamed 2015", "Taylor 2017", "Bailey et al 2023", "Todd 2016"], "quotes": [{"text": "The perpetrator perspective (Freeman): mainstream civil rights discourse defines racism as conscious individual bias or differential treatment — this systematically denies the structural and institutional dimensions of racism. Result: victims are required to prove the perpetrator's intent, not systemic unequal consequences.", "src": "Freeman, cited in Crenshaw et al. (1995, p.xiv)"}, {"text": "Color-blindness ideology: claiming not to see race/skin colour to achieve equality — but this serves the myth of equal opportunity/meritocracy, avoiding the fundamental question of why wealth/education/power are distributed as they are.", "src": "Crenshaw et al. (1995, pp.xv–xvi)"}, {"text": "CRT writing is antithetical knowledge (Said): intervening/oppositional writing directly confronting institutional knowledge. Explicitly rejecting the myth of neutral/objective scholarship — knowledge production is political practice — No Exit.", "src": "Said; cited in Crenshaw et al. (1995, p.xxi)"}, {"text": "Both liberals and conservatives understand racism as the opposite of colour-blindness (i.e., race-consciousness = racism). This shared framework means genuinely structural analysis cannot find space in mainstream political discourse — left and right share a wrong premise.", "src": "Crenshaw et al. (1995, pp.xix–xx)"}]}, {"id": 22, "author": "Melamed, J.", "year": "2015", "title": "Racial capitalism. Critical Ethnic Studies, 1(1).", "themes": ["crt", "critical"], "summary": "提出核心命题：现代资本主义=种族资本主义（racial capitalism）。资本积累通过种族化技术制造被抛弃和贬值的人群（abandoned and devalued populations）。批判反种族主义的自由主义话语与治理术：表面的代表性与包容叙事掩盖了再分配与去殖民承诺的缺失，道德语言覆盖结构问题，不平等被个体化。", "keyArgs": [{"term": "种族化即生产关系技术", "exp": "种族不是资本主义的副产品或外套，而是其内在的生产技术：可移动的、可编程的（programmable）统治技术。人的分类/计量/阀值——谁被视为可剥削的劳动力，谁被视为可抛弃的人口，这是种族化生产关系的核心机制。"}, {"term": "差等化的生命估值", "exp": "资本主义通过差等化的生命估值来组织再生产：某些生命被视为可牺牲的（expendable）、可抛弃的（abandoned）。Organized abandonment（有组织的遗弃）与Organized violence（有组织的暴力）共同构成种族资本主义的运作机制。"}, {"term": "金融化与种族化的交织", "exp": "Risk shift：金融风险被转移到个人（尤其是有色人种）身上，同时系统性收益流向白人/机构。这不是市场中性的结果，而是种族化的再分配机制。"}, {"term": "包容叙事的局限", "exp": "可见度（visibility）与包容（inclusion）叙事替代了对再分配与去殖民的实质承诺。道德语言（diversity/equity/inclusion）覆盖结构问题，不平等被个体化。大学与知识体制的囚笼：知识生产也是种族资本主义的组成部分。"}, {"term": "有效的反种族主义路径", "exp": "必须走向abolitionist（废除主义）与去殖民的政治，而非只是多元文化主义改良。知识-政治-组织三联动：批判研究必须与政治组织能力建设相连，否则只是学术内部的符号游戏。"}], "questions": ["如何在具体的休闲研究中分析种族化的可编制性？哪些休闲实践/政策体现了种族资本主义的逻辑？", "组织能力建设如何成为批判研究的具体落点？研究者如何在学术和组织实践之间找到连接？", "种族资本主义分析框架在全球南方/非西方语境中的适用性：中国的阶级-民族-地区差异是否构成一种不同形态的差等化生命估值？"], "thinkers": ["Melamed", "Robinson", "Coulthard", "Foucault", "Gilmore", "Davis"], "method": "分析休闲政策/项目时，追问：谁的生命被这个项目视为值得投资的？谁被有组织地遗弃/排除？这些差异是否沿着种族/民族/阶级的线条分布？", "note": "", "related": ["Ladson-Billings 1998", "Crenshaw et al 1995", "Bailey et al 2023", "Berbary forthcoming", "Tuck & Yang 2012"], "quotes": [{"text": "Modern capitalism = racial capitalism. Capital accumulation: racial technologies, manufacturing 'abandoned and devalued' populations. The origins lie in racialised difference (labour, land, life). Racialisation is a technology of production relations — mobile, programmable domination technology.", "src": "Melamed (2015, pp.77–78)"}, {"text": "Capitalism organises reproduction through differential valuation of life — some things are seen as expendable, disposable. Organised abandonment and organised violence jointly constitute the operating mechanisms of racial capitalism.", "src": "Melamed (2015, p.79)"}, {"text": "Visibility and inclusion narratives replace the substantive commitment to redistribution and decolonisation. Moral language (diversity/equity/inclusion) covers structural problems, inequality is individualised. The cage of universities and knowledge institutions: knowledge production is also part of racial capitalism.", "src": "Melamed (2015, pp.80–81)"}, {"text": "Knowledge–politics–organisation trinity: critical research must be connected to building political organisational capacity; otherwise it is only symbolic play within academia. Effective anti-racism must move toward abolitionist and decolonising politics.", "src": "Melamed (2015, pp.83–84)"}]}, {"id": 23, "author": "Bailey, K. A., et al.", "year": "2023", "title": "In the wake of Canada's violent eugenic legacies: An urgency to ReVision Fitness. Leisure/Loisir.", "themes": ["leisure", "crt"], "summary": "批判健身领域中持续运作的白人身体至上主义（white corporeal supremacy）：即使在进步的行动主义话语中，优生学遗产、能力主义和包容主义（Inclusionism）的局限仍然可见。Non-performativity（Ahmed）：政策宣示的存在恰恰掩盖了实质性不平等的持续。提出休息的政治（politics of rest）：休息同样被种族化/能力化/体型化，谁被允许休息、谁被贴懒标签，是种族-能力-阶级权力的体现。", "keyArgs": [{"term": "白人身体至上（white corporeal supremacy）", "exp": "在健身/休闲空间中持续运作的种族-能力-体型等级秩序，即便在进步话语（包容/多元）的表面下仍然有效。优生学遗产的制度化：通过能力主义（ableism）和体型歧视，继续差等化身体价值。"}, {"term": "Inclusionism批判", "exp": "表面欢迎差异，但差异者必须以符合规范（compliance）为前提才能进场。把包容（inclusion）的责任转嫁给被排斥者（被要求先符合标准）。强调改造个体而非改变体制；资源重新流向本来就能的身体。"}, {"term": "Non-performativity（Ahmed, 2006）", "exp": "政策之所以有效，恰恰因为它不产生其名义上的改变；它把行动的幻觉当作行动本身。宣示的存在掩盖了不平等——机构以承认问题当作已改问题。差异者的劳动被转为空转。"}, {"term": "休息的政治（politics of rest）", "exp": "休息同样被种族化/能力化/体型化：谁被允许休息，谁被贴懒标签。西方瑜伽的殖民化；静止/冥想被商品化为提升产能的快修——这本身就是能力主义-资本主义逻辑的体现。休息能否成为对生产力逻辑的抵抗？"}, {"term": "ReVision健身的定义", "exp": "把任何能带来喜悦的休闲活动都视为健身，而非以身体标准化/规范化为核心。从自我到制度：拆解能力主义-种族制度需要长期的个人与集体努力，而非单纯的包容修辞。"}], "questions": ["只有当我承认差异才能被公平对待，但当我承认差异时又被排除——公平对待的真正前提是什么？承认差异与消除歧视之间的悖论如何解决？", "当机构以承认问题当作已改问题时，差异者的劳动如何避免空转？有哪些具体的制度设计可以防止Non-performativity？", "休息作为对能力主义-资本主义生产冲动的抵抗：这在实践中意味着什么？如何在不浪漫化休息的同时坚持其政治意义？"], "thinkers": ["Ahmed", "Bailey", "Mobley", "Kafer", "Rice", "Mitchell", "Snyder"], "method": "在休闲研究中，分析哪些身体被默认为健身的标准身体；谁的存在使这些标准不言自明；包容叙事如何在实践中产生Non-performativity效果。", "note": "想起东南亚跨性别研究的问题：泰国跨性别者的结构性处境——法律层面的性别标记歧视、性旅游的经济压力、媒体对跨性别身体的消费化。", "related": ["Valtchanov & Parry", "Crenshaw et al 1995", "Ladson-Billings 1998", "Hamrie & Fritsch 2019", "Changfoot et al 2022"], "quotes": [{"text": "White corporeal supremacy: the racial–ability–body-size hierarchical order operating in fitness/leisure spaces, even effective under the surface of progressive discourse (inclusion/diversity). The institutionalisation of eugenic heritage through ableism and body discrimination.", "src": "Bailey et al. (2023, pp.3–4)"}, {"text": "Inclusionism: apparently welcoming difference, but those who are different must comply with norms as a precondition for entry. Transfers the responsibility of inclusion to the excluded (required to first meet standards). Emphasises reforming the individual rather than changing the institution.", "src": "Bailey et al. (2023, pp.6–7)"}, {"text": "Non-performativity (Ahmed, 2006): a policy is effective precisely because it does not produce the change it nominally supports; it substitutes the illusion of action for action itself. The existence of declarations conceals inequality — institutions treat acknowledging the problem as having fixed it.", "src": "Ahmed (2006), cited in Bailey et al. (2023, p.8)"}, {"text": "The politics of rest: rest is also racialised/ability-ised/body-sized — who is allowed to rest, who gets labelled as lazy. The colonisation of Western yoga; stillness/meditation commercialised as quick fixes to boost productivity — this is itself the logic of ableism-capitalism.", "src": "Bailey et al. (2023, pp.11–12)"}]}, {"id": 24, "author": "Halberstam, J.", "year": "2005", "title": "In a Queer Time and Place: Transgender Bodies, Subcultural Lives [Ch. 1]. NYU Press.", "themes": ["queer"], "summary": "提出酷儿时间性（queer temporality）和酷儿地理（queer geographies）的概念框架。反对家庭/异性恋/再生产时间规训——拆解三重异性恋时间：Repro-time（生物钟/中产体面规训）/Family time（育儿日常规范作息）/Inheritance time（代际价值/财富传承）。Queer time：离开资产阶级再生产时间框架后出现的特定时间模型。AIDS危机的时间压缩与当下性。Metronormativity批判：酷儿不等于城市化。", "keyArgs": [{"term": "三重异性恋规训时间", "exp": "Repro-time：女性生物钟+中产体面规训/夫妻作息安排；Family time：育儿的日常规范作息表；Inheritance time：代际价值/财富/物品/道德的传承。这三重时间共同构成异性恋-资产阶级秩序的自然化机制，把正常人生表与国家/家庭稳定/风险治理打包成一个自然的安排。"}, {"term": "Queer time", "exp": "AIDS危机创造了压缩的时间性：不断收缩的未来迫使注意力转向此时此刻，把当下挤压出新的可能性。亚文化产生替代性时间，不受出生-婚姻-生育-死亡范式束缚。药物创造的游戏性时间（ludic temporality），重写快慢、稳定/爆发的道德叙事。"}, {"term": "Queer space", "exp": "酷儿参与的地方营造实践；酷儿反公共（counterpublics）生产的空间新理解。非都市酷儿的关注——质疑酷儿生活=城市的本质描述（metronormativity）。Delany的时代广场分析：所谓净化城市的背后是对跨阶级接触的恐惧。"}, {"term": "Homonormativity（Duggan, 2003）", "exp": "不挑战主导的异性恋规范与制度，反而维护它们；同时承诺一种被去动员化的同志群体，被家庭性与消费所锚定。越界例外主义：在酷儿社群里，少数人的越界被展示为进步，掩盖了整体的规范化。"}, {"term": "Identity politics的反思", "exp": "从对普遍主义的必要/策略性批判，蜕变为自我政治的狭隘困局。身份政治一词被模糊使用，成为新的本质主义标签，用以指责某些议题涉己。"}], "questions": ["Cathy Cohen 1999：有色queer、贫困者被边缘化于酷儿理论的核心叙事——如何在酷儿理论中真正处理交叉性而不将其降格为身份附加？", "性别灵活性如何避免被误读为个人主义或进步的新证据（flexible citizenship的危险）？", "公共性地下世界（Delany的时代广场）的叙事中缺少女性——queer theory的性别盲点如何修正？"], "thinkers": ["Halberstam", "Foucault", "Delany", "Harvey", "Butler", "Cohen", "Duggan", "Edelman", "Bersani"], "method": "酷儿时间性分析提供了一种不同于线性进步叙事的时间分析工具，可以用于分析边缘群体的时间经验、亚文化实践与主流时间规训的冲突。", "note": "因果不是在时间线上的——整个意识和存在是混乱的参杂体。这个想法让我重新思考研究设计中对时间的默认假设。", "related": ["Bailey et al 2023", "Changfoot et al 2022", "Berbary 2017", "hooks 1991"], "quotes": [{"text": "Three heterosexual regulatory times: Repro-time (women's biological clock + middle-class respectability discipline); Family time (daily normalised timetable of child-rearing); Inheritance time (intergenerational transmission of values/wealth/objects/morality). Together they naturalise the hetero-bourgeois order.", "src": "Halberstam (2005, pp.4–5)"}, {"text": "Queer time: the AIDS crisis created a compressed temporality — constantly shrinking futures forced attention onto the here and now, squeezing new possibilities from the present. Subcultural time, not bound by the birth–marriage–reproduction–death paradigm.", "src": "Halberstam (2005, pp.6–7)"}, {"text": "Metronormativity: queer life is not necessarily urban. Delany's Times Square analysis: the so-called 'clean city' conceals fear of cross-class contact — queer space is also a class political space.", "src": "Halberstam (2005, pp.12–13); Delany"}, {"text": "Homonormativity (Duggan, 2003): not challenging dominant heterosexual norms and institutions, but reinforcing them; promising a demobilised gay constituency anchored in domesticity and consumption — transgressive exceptionalism conceals overall normalisation.", "src": "Duggan (2003), cited in Halberstam (2005, p.9)"}]}, {"id": 25, "author": "Bennett, J.", "year": "2010", "title": "Vibrant Matter: A Political Ecology of Things [Ch. 1]. Duke University Press.", "themes": ["materialism"], "summary": "提出生机唯物主义（vital materialism）：thing-power——看似无生命之物激活、行动、产生效果的能力。通过巴尔的摩街头垃圾的偶遇（手套/花粉/老鼠/瓶盖/木棍），展示物如何从废弃物转变为具有thing-power的存在。核心本体论主张：人类自身是vibrant matter的一部分，人与非人的边界是滑动的，物质活力是连续谱而非断裂二元。", "keyArgs": [{"term": "Thing-power的概念", "exp": "看似无生命之物激活、行动、产生效果的能力——不是文化赋予的象征意义，而是物质自身的能动性。物体变成things：不再只是被人类语境完全耗尽的对象，而是带有自身能量的存在。垃圾的双重视角：作为废弃物（人类中心）vs 作为thing（本体论平等主义）。"}, {"term": "Assemblage视角", "exp": "垃圾堆为什么发光了？因为那些物件在特定时刻形成了assemblage——元素的聚合产生了超出各部分之和的效果。为什么这堆垃圾产生了美感/生命感？Gould：令人痛苦的复杂性和顽固性（excruciating complexity and intractability）。"}, {"term": "消费文化是anti-materiality的", "exp": "当代美国的物质主义实际上是anti-materiality：海量商品+快速抛弃，遮蔽了物质本身的生命力。消费文化把物质降格为一次性工具，恰恰是对物质活力的否认——这是一个吊诡的批判。"}, {"term": "有机/无机连续谱", "exp": "Deleuze/Vernadsky：植物里总有一丝动物性，动物里总有一丝植物性；生命与物质不是截然分开的，而是连续谱。DeLanda：无机物也会self-organize。Kafka的Odradek打破有机/无机二分。"}, {"term": "Adorno非同一性与物的超越", "exp": "通过不断揭示概念的不充分，强化我们对对象超出认知的感受。放弃对世界彻底掌控的欲望。物总有超出我们认知和文化框架的部分，这个超出本身是政治的——迫使我们重新考虑控制欲。"}], "questions": ["Thing-power会不会只是我们给物体加上的文化意义？Bennett如何区分她自己的文化投射和物的真实能动性？", "如果抹平人/物边界，是否会助长对人的物化？Kant的人是目的本身是否在历史上有效地阻止了人类互相残酷对待？", "进化论中的适应（adaptation）是否可以重写为assemblage的稳定？社会看成多层进化的物质网络这个框架是否有研究价值？"], "thinkers": ["Bennett", "Latour", "DeLanda", "Vernadsky", "Deleuze", "Guattari", "Adorno", "Lucretius", "Spinoza", "Kafka"], "method": "振动物质论提供了一种不同的研究本体论：不只关注话语/文化的建构，同时关注物质自身的能动性。在旅游/休闲研究中，这意味着：场所/物件/身体不只是意义的载体，也是能动的行动者。", "note": "读完后竟然不感到奇怪或质疑，有一种冥冥之中世界本来就是如此的感觉——我不知道这种想法是什么，但它很真实。", "related": ["Rosiek et al 2020", "Stinson et al 2022", "Hockert 2020", "Moran 2000"], "quotes": [{"text": "Thing-power: the capacity of seemingly inanimate things to activate, act, and produce effects — not symbolic meaning conferred by culture, but the agency of matter itself. Objects become things: no longer only exhausted by human contexts, but beings with their own energy.", "src": "Bennett (2010, pp.2–3)"}, {"text": "Assemblage perspective: why does the garbage heap glow? Because those objects at that particular moment formed an assemblage — the aggregation of elements produced an effect exceeding the sum of its parts. Gould: excruciating complexity and intractability.", "src": "Bennett (2010, p.4)"}, {"text": "Contemporary 'materialism' is actually anti-materiality: vast commodities + rapid disposal conceals the vitality of matter itself. Consumer culture degrades matter to disposable tools — a paradoxical critique of consumer materialism.", "src": "Bennett (2010, pp.12–13)"}, {"text": "Deleuze/Vernadsky: there is always a trace of animality in plants, a trace of plant-nature in animals — life and matter are not sharply separated but a continuum. DeLanda: inorganic matter also self-organises. Kafka's Odradek breaks the organic/inorganic binary.", "src": "Deleuze; Vernadsky; DeLanda; Kafka, cited in Bennett (2010, pp.9–11)"}]}, {"id": 26, "author": "Rosiek, J., et al.", "year": "2020", "title": "The new materialisms and Indigenous theories of non-human agency. Qualitative Inquiry, 26(3-4).", "themes": ["materialism", "indigenous"], "summary": "质疑新唯物主义（Barad, Latour等）为何未与原住民的非人能动理论展开对话，尽管后者早已将非人能动作为分析出发点。批判Columbus发现非人能动性的表演性矛盾：一边主张反思权力，一边在引用实践上延续白人欧洲中心结构。呼吁respectful anti-colonial engagement：把原住民学者视为理论家而非田野对象。", "keyArgs": [{"term": "表演性矛盾（performative contradiction）", "exp": "新唯物主义声称反思权力与不平等，但在行动上延续白人欧洲中心的引用结构（citation structure），系统性地不引用原住民学者的作品。Columbus发现非人能动性：用新词包装已在原住民传统中存在几百年的洞见。"}, {"term": "Place-thought（Watts, 2013）", "exp": "土地是活的、有思维的。身处特定地点的过程使某种意识和视野成为可能——mind of the place。人与地方的关系是两个感知的接口，不是主体与客体的关系。地方在某种意义上通过人类作为媒介为自己发声。"}, {"term": "Grounded normativity（Coulthard）", "exp": "规范性（normative standards）来自与土地的具体关系，而非抽象的普遍原则。这是对new materialism的批判性补充：光谈非人能动还不够，需要把土地关系的伦理-政治维度纳入分析。"}, {"term": "Inclusive politics of citation", "exp": "种族主义不只是旁支原因，而是让学者不去读原住民作品的结构性机制。白人抽取原住民理论但不承担政治责任——这是认识论提取主义的学术形态。"}, {"term": "深层互惠（deep reciprocity）", "exp": "Simpson：知识获取本身要求建立深层互惠关系，不只是合作研究或参与式研究。物质性的赠与（gift of materiality）：在求知时，人已经卷入与他者的共生关系，必须付出某种代价来承认这种共生。"}], "questions": ["如何在不挪用（appropriation）的前提下，与原住民学者建立真正的对话？区分学习、借用、挪用的边界是什么？", "Barad的纠缠性（entanglement）与原住民关系性（relationality）的相似与差异：哪些是真正的共鸣，哪些是新唯物主义对原住民洞见的再包装？", "引用政治的实践：如何在自己的研究写作中实践inclusive politics of citation？"], "thinkers": ["Rosiek", "Barad", "Latour", "Watts", "Coulthard", "Simpson", "Deloria", "Todd"], "method": "在文献综述中，审查你的引用列表：有多少原住民学者？他们是作为理论家还是作为田野背景？如果比例失衡，这揭示了什么？", "note": "把藏族研究联系起来：山（ri）、湖（mtsho）、地神（sa bdag）都被当作有意志的存在——这是Place-thought在藏族宇宙观中的体现，应该被视为理论资源而非文化背景。", "related": ["Todd 2016", "Wilson 2008", "Tynan 2021", "Bennett J 2010", "Hockert 2020"], "quotes": [{"text": "Performative contradiction: new materialisms claim to reflect on power and inequality, but in practice perpetuate white Eurocentric citation structures — systematically not citing Indigenous scholars' work. Columbus discovering non-human agency: packaging already-existing Indigenous insights in new vocabulary.", "src": "Rosiek et al. (2020, pp.332–333)"}, {"text": "Place-thought (Watts, 2013): land is alive and thinking. Being in a particular place makes a certain consciousness and perspective possible — mind of the place. The relationship between person and place is an interface of two perceptions, not subject and object.", "src": "Watts (2013), cited in Rosiek et al. (2020, p.336)"}, {"text": "Grounded normativity (Coulthard): normative standards come from specific relationships with land, not abstract universal principles. This is a critical supplement to new materialism — just talking about non-human agency is not enough; the ethical-political dimensions of land relations must be incorporated.", "src": "Coulthard, cited in Rosiek et al. (2020, p.338)"}, {"text": "Inclusive politics of citation: racism is not a peripheral reason but the structural mechanism that prevents scholars from reading Indigenous works. Extracting Indigenous theory without bearing political responsibility — this is the academic form of epistemological extractivism.", "src": "Rosiek et al. (2020, pp.340–341)"}]}, {"id": 27, "author": "Todd, Z.", "year": "2016", "title": "An Indigenous Feminist's take on the ontological turn. Journal of Historical Sociology, 29(1).", "themes": ["indigenous", "poststructural"], "summary": "直接点名批评本体论转向（ontological turn）的学术实践：一边大谈去殖民/本体论自决，一边在结构上继续维持白人至上和对原住民学者的系统性抹除。提出Aer nullius（知识层面的terra nullius）：先把原住民的关系和权利从知识空间抹除，再用自己的理论填充进去。批判白人公共空间（white public space）的结构性维持。", "keyArgs": [{"term": "Aer nullius（知识的terra nullius）", "exp": "先把原住民的关系和权利从学术知识空间中抹除，然后用欧洲理论填充。这与殖民时代的terra nullius（无主之地）逻辑完全一致——先宣布原住民不存在，再占领。本体论转向在知识空间中重演殖民地理的占领逻辑。"}, {"term": "表演性矛盾的具体体现", "exp": "一边大谈本体论去殖民，一边在实际引用和会议中几乎只引用欧洲白人男性理论家。欧洲学术结构让只在欧洲内部互相引用的讲法变得自然。Location（Sundberg）：承认自身位置是去殖民本体论的第一步。"}, {"term": "Lighten up = Whiten up", "exp": "白人用放轻松来化解、抹平批判者的不适，实际是在要求批判者不要破坏白人舒适空间（white comfort space）。The revolution will be mediated——媒体化和学术化的革命如何被驯化为不伤害权力的形式。"}, {"term": "白人公共空间的结构", "exp": "Ahmed (2014)：白人男性是一个机构——持续的结构/规范/行为方式/引用方式。White fragility是这一结构的防御机制。人类学是白人公共空间（Brodkin et al.）。"}, {"term": "实践性的去殖民引用", "exp": "给出了一份原住民学者名单（Donald, Borrows, Napoleon, Audra Simpson, TallBear等），要求在研究中把原住民视为理论家，而不只是田野对象。在学院的具体实践中拆开白人至上的结构。"}], "questions": ["为何实际引用谱系仍几乎都是白人男性，即便研究者声称支持去殖民？哪些结构性机制使这种状况自我延续？", "在招聘/课程/引用/合作方式等具体学院实践中，如何一点一点把白人至上的结构拆开？哪些是可操作的第一步？", "本体论转向的理论价值是否可以在承认原住民知识先在性的前提下保留？还是说它的整个框架都需要被重新思考？"], "thinkers": ["Todd", "Holbraad", "Viveiros de Castro", "Watts", "Sundberg", "Hunt", "Donald", "Coulthard"], "method": "每次写作理论综述时，审查：我是否在Columbus式地发现原住民学者早已提出的洞见？我是否给予了原住民学者作为理论家（而非背景材料）的地位？", "note": "Oh damn, this is exactly what Nada keeps telling me. Thank god！", "related": ["Rosiek et al 2020", "Wilson 2008", "Smith 2012", "Crenshaw et al 1995", "Berbary 2017"], "quotes": [{"text": "Aer nullius: first erasing Indigenous peoples' relationships and rights from academic knowledge space, then filling it with European theory. This is exactly the same logic as terra nullius (land without people) from the colonial era — first declaring Indigenous peoples non-existent, then occupying.", "src": "Todd (2016, p.8)"}, {"text": "Lighten up = Whiten up: white people use 'relax' to defuse and flatten critics' discomfort — actually demanding that critics not disturb white comfort space. The revolution will be mediated — how a mediated and academicised revolution is domesticated into a form that does not harm power.", "src": "Todd (2016, p.11)"}, {"text": "Ahmed (2014): white male is an institution — a continuous structure/norm/behavioural mode/citation mode. White fragility is the defensive mechanism of this structure. Location (Sundberg): acknowledging one's own position is the first step in decolonial ontology.", "src": "Ahmed (2014); Sundberg, cited in Todd (2016, pp.9–10)"}, {"text": "Cite this, not that: gives a list of Indigenous scholars (Donald, Borrows, Napoleon, Audra Simpson, TallBear, etc.), requiring that Indigenous people be treated as theorists in research, not just field context. Dismantling the structure of white supremacy in the academy one concrete practice at a time.", "src": "Todd (2016, pp.14–15)"}]}, {"id": 28, "author": "Berbary, L.", "year": "2017", "title": "Thinking through post-structuralism in leisure studies. In Palgrave Handbook of Leisure Theory.", "themes": ["poststructural", "leisure"], "summary": "后结构主义对休闲研究人文主义基础的系统性扰动：人文主义的taken-for-granted（稳定主体/透明语言/线性进步/可靠真理/1:1再现逻辑）在生产不公正效应。从Foucault、Derrida、Butler到Barad，提出Palimpsest策略：一边使用这些概念，一边不断interrogate它们携带的历史与意识形态残余。Post不是时间线性意义的之后，而是一种持续的政治批判实践。", "keyArgs": [{"term": "Post的含义：永久政治批判", "exp": "不是时间线性质的在后（after），而是permanent political critique that has no end（St. Pierre, 2000）。这是一种方法论姿态：让那些被视为理所当然的东西不再理所当然（Foucault）。Post不是取代人文主义，而是持续扰动、拉伸、interrogate其taken-for-granted。"}, {"term": "清晰语言的政治警告（Lather）", "exp": "清晰的、立刻被理解的话语往往是透明能指，它们恰好是最顺畅地嵌入既有意义体制的那种语言，因此最容易加固而不是颠覆现有结构。Post-structuralism有时选择难懂：不是为了故弄玄虚，而是抗拒常识、重写语言-世界关系的政治实践。"}, {"term": "Palimpsest策略（羊皮纸策略）", "exp": "一边借用人文主义概念，一边不断interrogate它们携带的历史与意识形态残余。就像在旧羊皮纸上重新书写，原有的印记仍然可见——承认无法完全逃出人文主义，但坚持不断摩擦。Spivak：persistently critiquing a structure that one cannot not inhabit。"}, {"term": "解构不是否定（Butler）", "exp": "把一个概念打开，让它以尚未获得授权的方式再次被使用。解构leisure/work/community/disability等概念：不是取消这些概念，而是打开它们，让边缘化群体能以新的方式使用它们。这是生产性的，不是虚无的。"}, {"term": "新唯物主义的纠缠（Barad）", "exp": "Material-discursive entanglements：物质和话语不是分开的，而是相互纠缠的（entangled）。思想成为一种行动方式（Deleuze & Guattari）。没有一个超越的深层真理，所有东西都在表面纠缠。"}], "questions": ["当难懂被选择为对清晰语言/常识的抵抗时，是否排除了底层群体进入理论对话的可能？可及性与批判性之间的张力如何处理？", "解构哪些休闲研究的核心概念（work/leisure/free time/wellness/disability等）是生产性的，哪些会滑向虚无？如何判断？", "后结构主义与批判理论的关系：前者更关注语言/权力，后者更关注结构/解放。它们能否互补？"], "thinkers": ["Foucault", "Derrida", "Butler", "Barad", "Lather", "St. Pierre", "Halberstam", "Spivak", "Deleuze", "Guattari"], "method": "在休闲研究写作中，把所有核心概念（leisure, freedom, health, wellness, community）都当作需要历史化和去自然化的对象。问：这个概念如何被构建出来？它服务于谁？它排除了谁？", "note": "Every Chinese person harbors fragments of capitalism within their heart, yet lives under socialism.", "related": ["Burr 1995", "Halberstam 2005", "hooks 1991", "Todd 2016", "Bennett J 2010"], "quotes": [{"text": "Post is not a temporal 'after' but permanent political critique that has no end (St. Pierre, 2000). A methodological stance: making what is taken-for-granted no longer so (Foucault). Post does not replace humanism, but continuously disturbs, stretches, interrogates its taken-for-granted.", "src": "St. Pierre (2000); Foucault, cited in Berbary (2017, p.6)"}, {"text": "Lather — the political warning of clear language: clear, immediately understandable discourse is often the very kind most smoothly embedded in the existing meaning regime, and therefore most easily reinforces rather than subverts existing structures. Choosing difficulty is a political practice of resisting common sense.", "src": "Lather, cited in Berbary (2017, p.9)"}, {"text": "Palimpsest strategy: using humanist concepts while continuously interrogating the historical and ideological residues they carry. Like rewriting on old parchment — the original imprints still visible. Spivak: persistently critiquing a structure that one cannot not inhabit.", "src": "Spivak, cited in Berbary (2017, p.11)"}, {"text": "Butler: deconstruction is not negation — opening a concept so it can be used again in ways not yet authorised. Deconstructing leisure/work/community/disability: not cancelling these concepts but opening them so marginalised groups can use them in new ways.", "src": "Butler, cited in Berbary (2017, p.13)"}]}, {"id": 29, "author": "Berbary, L.A.", "year": "forthcoming", "title": "Infrastructure for revolutionary imagination: Radical political education, solidarity research, and the Theorypractice Lab. Unpublished draft, July 2025.", "themes": ["critical", "leisure"], "summary": "激进政治教育（radical political education）作为解放的基础设施：在社区之内/为社区/由社区。批判休闲研究中的自由主义化：福祉/包容/社会资本等话语成为去政治化和美化剥削的工具，忽视社会结构性根源。Theorypractice Lab案例：理论与实践本来一体（不是理论指导实践，而是在斗争实践中共同生产知识）。Restorative/reparative research：shared risk，而非传统合作研究的合法性背书。", "keyArgs": [{"term": "解放的基础设施", "exp": "激进政治教育不是课程内容，而是建立叛乱式（insurgent）基础设施：在社区之内/为社区/由社区。对抗被自由主义驯化的政治教育（仅停留在意识培养，不触及物质-制度改变）。以社区生存、自主掌控、激进团结为目标，而非服务于劳动力市场与学院新自由主义。"}, {"term": "休闲作为被权力纠缠的场域", "exp": "劳动/应得性/生产力的边界被政治关系模糊，不平等权力支配。自由主义的社区话语（福祉/包容/社会资本）美化并遮蔽了剥削的结构性根源。没有摆脱暴力/权力/结构压迫的休闲——这是核心批判立场。"}, {"term": "Theorypractice Lab的实践", "exp": "住房正义/反绅士化；跨越街头-学校边界；集体行动-学习-反思空间。知识不是自上而下传递，而是在斗争实践中共同生产的。激进主体：斗争、改装、破裂——不是等待被教育，而是在实践中生成批判主体性。"}, {"term": "Restorative/reparative research", "exp": "不是合作研究/参与式研究的合法性背书，而是shared risk：研究者真正卷入社区斗争，共同承担风险。如何理解修复（restorative）？再分配（reparative）？权力重组？这些都不只是话语层面的问题。"}, {"term": "命名vs介入", "exp": "命名和更改口号不等于真正的介入/组织/动员。美化和利益化剥削，遮蔽了集体学习和物质干预的政治条件基础。反叙事也在被美化——我们如何面对？"}], "questions": ["儒家规训与解放教育：中国传统中家-族-国的链条，以及差序格局和礼的规范如何内化为避让/含蓄的表达，阻碍了政治化和制度化的表述？这对激进政治教育在中国语境中意味着什么？", "如何跨越解放的第一步：浮躁与虚荣？在极度消费主义和数字化的当代环境中，解放教育的起点在哪里？", "斗争成为多元/对话/协作——是真正的策略演进还是被去激进化？如何识别两者的区别？"], "thinkers": ["Berbary", "Freire", "hooks", "Gramsci", "Marx", "Fanon", "Simpson"], "method": "批判性休闲研究需要追问：我的研究真的对社区有用吗？我是否分担了研究的风险？我的知识生产过程是否本身就是一种剥削？", "note": "反叙事在被美化中——这是一个令人不安的观察：连激进批判本身也可以被商品化、被学院消化成另一种形式的表演。", "related": ["hooks 1991", "Crotty critical 1998", "Ladson-Billings 1998", "Melamed 2015", "Bailey et al 2023"], "quotes": [{"text": "Leisure is a social field deeply entangled with power/class/ideology. Labour, deservingness, and productivity boundaries — blurred by political relations, dominated by unequal power. Fundamentally, there is no leisure freed from violence/power and structural oppression.", "src": "Berbary (forthcoming, p.4)"}, {"text": "Liberal discourses of community (well-being, inclusion, social capital) beautify and conceal the structural roots of exploitation. Insurgent infrastructure: within/for/by community. Community survival, self-determination, radical solidarity, class suicide and reparative redistribution — NOT: serving the labour market and academic neoliberalism.", "src": "Berbary (forthcoming, pp.7–8)"}, {"text": "Theorypractice Lab: housing justice and anti-gentrification; crossing the street–school boundary; collective action–learning–reflection space. Knowledge is not top-down but a collective product of struggle practice. Radical subject: struggle, reappropriation, rupture!", "src": "Berbary (forthcoming, pp.12–13)"}, {"text": "Restorative/reparative research — shared risk, not the legitimacy endorsement of cooperative/participatory research. Naming and changing slogans ≠ genuine intervention, organisation, and mobilisation. Counter-narratives are also being aestheticised — how do we face this?", "src": "Berbary (forthcoming, pp.15–16)"}]}, {"id": 30, "author": "Mock, S. E., et al.", "year": "2025", "title": "How socioeconomic status shapes the association of social leisure with well-being. Journal of Leisure Research, 56(2).", "themes": ["leisure"], "summary": "量化研究：SES（社会经济地位）通过阶层即文化的机制（个体主义/集体主义文化取向）调节社会性休闲-幸福感关系。低SES群体：相互依存/集体主义自我观→社会性休闲（有人陪）对幸福感的影响更强；高SES群体：频次与活动多样性的优势更显著。政策含义：为不同SES匹配不同干预杠杆。", "keyArgs": [{"term": "SES的三维度操作化", "exp": "客观阶层（教育/收入/职业声望）；主观阶层（自我感知排名）；阶层即情境/文化（class-as-culture）——长期情境塑造自我观：低SES→相互依存/集体主义；高SES→独立/个人主义。本文以客观阶层为主要操作化变量。"}, {"term": "社会性休闲的操作化选择", "exp": "不是社交感（feeling of being social），而是有没有人陪（presence of others）。这个操作化选择的精确性：捕捉了物理社会性；但局限：忽略了志愿服务等高社会性但非运动的休闲场景，可能低估了社会性休闲的完整面貌。"}, {"term": "调节机制：文化自我观", "exp": "集体主义自我观的人，他人评价与关系质量对生活满意影响更大；被启动互依自我的人，他人看法更能左右满意度。这提供了SES→文化自我观→社会性休闲效果的中介机制链条。"}, {"term": "与Bourdieu的对话与偏离", "exp": "传统路径（Bourdieu）：阶层→持久倾向（habitus）→实践差异；品味/审美资本/文化全能者。本文转向：从区隔/品味路径转向心理框架（文化自我观）。是否区隔路径在同一数据中检验会失灵？"}, {"term": "政策含义的差异化", "exp": "低SES：应设计社交-连结导向的项目（成组报名/家友绑定/社区式活动场景）；高SES：可同时强调频次与身体活性。两者都受益于社会性，但低SES更依赖它，因此干预杠杆不同。"}], "questions": ["低SES对社会性线索更敏感——但社交冲突/污名暴露更高的反向效应（社交压力）如何检验？这个反例能否推翻核心假设？", "若再加入多样性/广度指标，高SES的频次优势会不会其实是涉猎更广在起作用？与杂食性（omnivorousness）理论的关系？", "在更强调价值的网络社会（而非纯粹娱乐性社交）中，低SES更依赖社会连结是否会出现反向的社交压力效应？"], "thinkers": ["Mock", "Bourdieu", "Crawford", "Hofstede", "Markus", "Kitayama"], "method": "研究设计中，操作化选择（社会性=有人陪）揭示了测量决策如何塑造结论。横断面设计的局限：无法追踪阶层-文化-休闲的动态关系。考虑加入多样性测量以完善对阶层-休闲关系的理解。", "note": "", "related": ["Valtchanov & Parry", "Bailey et al 2023", "Potwarka et al 2025"], "quotes": [{"text": "SES and social class: three definitions — objective class (education, income, occupational prestige); subjective class (self-perceived ranking); class as context/culture. Class shapes self-view over the long term: low SES → interdependence/collectivism; high SES → independence/individualism.", "src": "Mock et al. (2025, pp.197–198)"}, {"text": "Operationalisation of 'social leisure': not 'social feeling', but 'having someone present'. Limitation: ignoring highly social but non-exercise leisure contexts such as volunteering — may underestimate the full picture of social leisure.", "src": "Mock et al. (2025, pp.200–201)"}, {"text": "Policy implications: low SES — design social–connection-oriented programmes (group enrolment, family–friend bonding, community-style activity settings); high SES — can simultaneously emphasise frequency and physical activity. Both benefit from sociality, but low SES is more dependent on it.", "src": "Mock et al. (2025, pp.207–208)"}, {"text": "Departing from Bourdieu's distinction/taste path toward a psychological framework (cultural self-view). Does this mean the distinction/taste path would fail in the same data, or only that the present study did not measure it?", "src": "Mock et al. (2025); 笔记整理"}]}, {"id": 31, "author": "Potwarka, L.R., et al.", "year": "2025", "title": "Understanding the sport viewership experience using fNIRS. Scientific Reports, 15, 13374.", "themes": ["leisure", "neuro"], "summary": "运用fNIRS（功能近红外光谱）测量运动观看体验，提供在场/连续/生态有效的神经指标窗口，弥补传统自陈量表的局限：回溯偏差（retrospective bias）和潜意识加工（subconscious processing）难以捕捉。运动消费研究中的方法论创新：神经科学工具与社会科学理论（ego involvement）的结合。", "keyArgs": [{"term": "fNIRS的方法论优势", "exp": "与fMRI相比，fNIRS对运动更宽容，可以在接近真实运动观看环境下使用（生态有效性）；提供连续的、时间精确的神经活动记录；揭示何时观众最投入——而非只报告整体满意度。"}, {"term": "神经测量vs自陈量表的层次关系", "exp": "传统自陈量表易受：社会期望偏差；回溯性记忆偏差；无法捕捉无意识的情感/认知加工。fNIRS作为补充（而非替代）：提供皮层活动的直接测量，揭示意识层面难以报告的加工过程。"}, {"term": "Ego involvement的操作化", "exp": "对某项活动/事件/产品的动机状态与重要性感知，与身份核心性相关，且在运动消费研究中与忠诚/重复购买/满意等有关联。如何通过神经指标捕捉ego involvement的激活程度？"}, {"term": "生态有效性的挑战", "exp": "在真实体育现场实现fNIRS测量有多重挑战：环境噪音/运动伪影/设备可穿戴性/参与者舒适度。这些挑战限制了生态有效性的真正实现，需要在方法上继续改进。"}], "questions": ["神经指标与主观报告的层次关系：谁更真实？fNIRS测量的皮层激活与当事人主观感受的意义是否同一？", "如何将神经数据整合入社会科学的意义生产框架？神经指标能告诉我们关于社会意义的什么，以及什么不能告诉？", "从神经科学到社会政策：fNIRS数据如何转化为运动营销或休闲干预的设计原则？"], "thinkers": ["Potwarka", "Funk", "James"], "method": "神经科学方法为休闲研究提供了新的测量维度。在方法论设计中，思考：何时自陈量表足够？何时需要神经/生理测量补充？两种数据如何整合？", "note": "", "related": ["Mock et al 2025", "Valtchanov & Parry"], "quotes": [{"text": "Traditional self-report scales are subject to retrospective bias and cannot capture unconscious processing; neural indicators can fill this gap, and can reveal 'when' audiences are most engaged — not just reporting overall satisfaction.", "src": "Potwarka et al. (2025, p.2)"}, {"text": "Ego involvement: the motivational state and importance perception toward an activity/event/product, often related to identity centrality, and associated with loyalty, repeat purchase, and satisfaction in sport consumption research.", "src": "Potwarka et al. (2025, p.3)"}, {"text": "fNIRS as supplement (not replacement): provides direct measurement of cortical activity, revealing processing that is difficult to report at the conscious level. Ecological validity challenges: environmental noise, movement artefacts, wearability.", "src": "Potwarka et al. (2025, pp.5–6)"}]}, {"id": 32, "author": "Stinson, M.J., et al.", "year": "2022", "title": "Tracing the materiality of reconciliation in tourism. Annals of Tourism Research, 94.", "themes": ["tourism", "materialism"], "summary": "运用Actor-Network Theory（ANT）+关系性问责（relational accountability）框架，追踪旅游中和解（reconciliation）的物质性。通过Eastern white pine（安大略省东部白松）和图腾柱这两个物质-话语对象的分析，探讨它们如何参与构建和解叙事。批判认证的和解景观（certified reconciliation landscapes）：仅停留象征层面，不触及土地归还和权力重组。", "keyArgs": [{"term": "ANT作为方法与殖民风险", "exp": "ANT（Latour）：行动力在网络中分布，人与非人都是actant。但使用ANT本身就可能卷入殖民知识体系（批判one-world metaphysics）。研究需要承认ANT的部分性，并以原住民关系性问责来补充/修正。"}, {"term": "物件作为关系结点", "exp": "物件=关系结点+记忆装置+未来导向。和解的物质性意味着：物件不只是和解的象征，而是和解实践的能动参与者。Cameron：故事不只是反映现实，而是构成现实的物质-关系实践。"}, {"term": "白松的殖民叙事与收回", "exp": "The tree Ontario was built on：白松与殖民工业/国家建构纠缠，体现扰动/损毁/再生的历史。收回（reclamation）：把被砍的树收回来，赋予它新的物质-象征意义，将其转化为和解与新生长的象征。"}, {"term": "图腾柱的真实性问题", "exp": "某些原住民艺术形式被泛化为通用加拿大原住民象征，地理迁移使其失去具体文化语境。真实性应被理解为关系性的/不断生成的实践，而非对过去静态状态的再现——这是关键的概念转换。"}, {"term": "和解已死的批判与回应", "exp": "Campbell：和解已死。回应：不能由定居者来宣判和解是否已死。承认结构层面的失败与虚伪，但不接受以此为定居者摆烂的借口。becoming otherwise：成为承担责任的不同主体。"}], "questions": ["费孝通的差序格局与原住民关系圈层有何结构性对比？两者能否对话？", "如何设计田野问题来捕捉人们划分自己人/外人（insider/outsider）的方式，以及这种划分如何随情境变化？", "和解在旅游语境中是否不可避免地被商品化？有没有抵抗商品化的案例？"], "thinkers": ["Stinson", "Latour", "Cameron", "Coulthard", "Wilson", "Wolfe"], "method": "物质-话语分析框架：追踪物件在关系网络中如何聚合意义，同时保持对研究者自身殖民性位置的批判性意识。", "note": "费孝通《乡土中国》：差序格局的熟人社会与原住民关系本体论——两者都强调关系优先，但出发点不同（自我中心的扩展 vs 宇宙/土地中心的关系）。", "related": ["Bennett J 2010", "Bigby et al 2022", "Agbo & Grimwood 2024", "King et al 2023", "Rosiek et al 2020"], "quotes": [{"text": "ANT (Latour): agency is distributed in networks, both human and non-human are actants. But using ANT itself may be entangled in colonial knowledge systems (critique of one-world metaphysics). Research needs to acknowledge ANT's partiality and supplement/correct it with Indigenous relational accountability.", "src": "Latour; Østmo & Law, cited in Stinson et al. (2022, p.4)"}, {"text": "Objects = relational nodes + memory devices + future orientation. The materiality of reconciliation means: objects are not merely symbols of reconciliation but active participants in reconciliation practice. Cameron: stories don't just reflect reality but constitute it as material-relational practice.", "src": "Cameron, cited in Stinson et al. (2022, p.7)"}, {"text": "Campbell: reconciliation is dead. Response: settlers cannot adjudicate whether reconciliation is dead. Acknowledging structural failure and hypocrisy, but not accepting this as an excuse for settler inaction. Becoming otherwise: becoming different subjects who bear responsibility.", "src": "Campbell; cited in Stinson et al. (2022, pp.12–13)"}]}, {"id": 33, "author": "Agbo, M. & Grimwood, B.S.R.", "year": "2024", "title": "Decolonization of tourism: A practical approach to progressing the SDGs.", "themes": ["tourism", "indigenous"], "summary": "将旅游去殖民化与可持续发展目标（SDGs）的框架放在一起批判性地审视。批判旅游作为新殖民工具的历史：收益流出目的地社区（外资所有权），他者化机制系统性地否认东道社区的主体性。提出以人民为中心（people-centred）/自下而上（bottom-up）的去殖民旅游治理原则，强调free, prior, and informed consent（FPIC）作为核心制度保障。", "keyArgs": [{"term": "旅游-新殖民的结构性批判", "exp": "Britton（1982）：旅游收益因外资所有权而流出当地——旅游并非为目的地利益设计的系统。大规模渗漏（leakage）与高度外部控制的mass tourism密切相关。旅游暴露为全球体系的一部分，而这个体系根本上不是为目的地的利益设计的。"}, {"term": "他者化（othering）机制", "exp": "Kincaid/Staszak：游客通过他者化重写地方与居民，将其异域化/浪漫化/降格为被消费的对象。定居殖民结构（Wolfe/Chambers & Buzinde）：殖民主义不只是历史事件，而是持续塑造旅游的物质与话语运行的结构。"}, {"term": "SDGs的批判性审视", "exp": "McCloskey批评：MDGs没有培养批判意识，未触及贫困的结构性根源。SDG框架中的旅游-SDG 1（减贫）关系：没有创造真正的有利环境；大部分研究没有提出实际可行的解决方式。"}, {"term": "FPIC原则（自由、事先、知情同意）", "exp": "Free（不受胁迫）/Prior（决策之前）/Informed（获得充分信息）/Consent（真正的同意）。这是保障原住民自主控制权的核心制度机制，需要具体的程序性设计，不只是形式上的咨询。"}, {"term": "去殖民旅游的实践路径", "exp": "以人民为中心、自下而上的旅游治理；有意识地改变北-南/贫-富权力关系；归还原住民对土地和文化的自主控制权。旅游不只是叙事的去殖民，而是资源控制/知识生产/治理逻辑的去殖民。"}], "questions": ["SDG框架是否有足够的批判性资源来挑战殖民逻辑，还是它本身就内嵌于新自由主义发展话语，无法触及根本？", "在什么条件下，旅游可以真正成为去殖民实践，而不只是改良性的包容旅游？", "FPIC原则如何在实际旅游项目的制度设计中落地？有哪些成功/失败案例？"], "thinkers": ["Agbo", "Grimwood", "Britton", "Scheyvens", "Chambers", "Buzinde", "Wolfe", "Fanon", "Smith", "Tuck", "Yang"], "method": "在旅游研究中，分析旅游收益流向：谁受益，谁被剥夺？咨询（consultation）是否真正等于同意（consent）？决策过程中谁有实质性权力？", "note": "", "related": ["Bigby et al 2022", "Corntassel 2012", "Stinson et al 2022", "King et al 2023", "Tuck & Yang 2012"], "quotes": [{"text": "Britton (1982): tourism revenues flow out of local communities due to foreign ownership — tourism is not a system designed for destination benefits. Large-scale leakage is closely related to highly externally controlled mass tourism. Tourism is exposed as part of a global system not fundamentally designed for destination interests.", "src": "Britton (1982), cited in Agbo & Grimwood (2024, p.4)"}, {"text": "FPIC principle: Free (without coercion) / Prior (before decisions) / Informed (with full information) / Consent (genuine agreement). This is the core institutional mechanism to protect Indigenous peoples' autonomous control rights, requiring specific procedural design, not merely formal consultation.", "src": "Agbo & Grimwood (2024, p.9)"}, {"text": "SDG framework critique (McCloskey): MDGs did not cultivate critical consciousness and did not touch the structural roots of poverty. Tourism–SDG 1 (poverty reduction) relationship: has not created a genuinely enabling environment; most research does not propose actually feasible solutions.", "src": "McCloskey, cited in Agbo & Grimwood (2024, p.6)"}]}, {"id": 34, "author": "King, L. J., et al.", "year": "2023", "title": "Land-based methodologies and disrupting settler colonial legacies in parks. Leisure/Loisir, 47(1).", "themes": ["indigenous", "method"], "summary": "以Lutsel K'e Dene First Nation的Tracking Change项目为案例，探讨土地基方法论（land-based methodologies）在公园和保护区研究中如何扰动定居殖民遗产。方法论核心：观察变化（observing change）/讲述土地（storying land）/培育社区能力（fostering community capacities）。深化Community-Based Participatory Research（CBPR）框架：在实践中，社区参与深度很不一致，需要更深层的承诺。", "keyArgs": [{"term": "公园的矛盾角色", "exp": "国家公园同时保护领土和限制原住民进入/使用——这是定居殖民的制度化体现（Binnema & Niemi, 2006）。学术研究通过研究实践延续殖民权力（Smith, 1999）：公园作为资源景观和旅游商品的叙事，将原住民治理话语边缘化。"}, {"term": "土地基方法论的三个目标", "exp": "①Observing change：通过原住民知识框架观察土地变化；②Storying land：通过故事把土地的法律-伦理意义嵌入身体经验和记忆；③Fostering community capacities：研究过程本身就是培育社区自主能力的过程，而非外部知识提取。"}, {"term": "长者作为理论家", "exp": "长者是专家，知识通过实践与故事传承（Simpson, 2002）。通过让人回到土地、实践传统采集等活动，对抗settler colonialism，强化家庭纽带，支持传统治理结构与土地经济。长者不只是信息提供者，而是知识体系的守护者和理论家。"}, {"term": "CBPR的四R深化", "exp": "Respect/Relevance/Reciprocity/Responsibility。在实践中，社区参与深度不一致（Castleden et al., 2012）。需要问：谁真正在控制研究议程？社区成员是研究的合作者还是被研究对象？"}, {"term": "研究方法即研究成果", "exp": "life-story + photo-elicitation + land-based observation本身就是追求的核心目标，不只是数据收集工具。方法论承诺：研究过程必须体现所追求的价值（互惠/尊重/关系性）。"}], "questions": ["如何确保研究方法本身不复制殖民逻辑？即便是CBPR，在具体执行中如何避免社区被当作数据来源而非真正的合作者？", "当co-management机制仍带有强烈殖民逻辑时，土地基方法论能否在这个体制内找到空间，还是必然与体制产生冲突？", "研究方法与结果的融合：如何向学术评审者/资助机构解释，研究过程本身就是成果？"], "thinkers": ["King", "Grimwood", "Lutsel K'e Dene", "Smith", "Simpson", "Wildcat", "Alfred"], "method": "土地基方法论要求研究者真正在土地上进行研究，而非将土地作为抽象的分析单位。需要长期承诺（不是单次田野），以及对社区时间节奏和知识传承方式的尊重。", "note": "", "related": ["Smith 2012", "Wilson 2008", "Corntassel 2012", "Bigby et al 2022", "Agbo & Grimwood 2024"], "quotes": [{"text": "National parks simultaneously protect territories and restrict Indigenous access/use — the institutionalisation of settler colonialism (Binnema & Niemi, 2006). Academic research perpetuates colonial power through research practices (Smith, 1999): narratives of parks as resource landscapes and tourism commodities marginalise Indigenous governance discourse.", "src": "Binnema & Niemi (2006); Smith (1999), cited in King et al. (2023, p.123)"}, {"text": "Three goals of land-based methodologies: ① Observing change: through Indigenous knowledge frameworks; ② Storying land: embedding the legal-ethical meaning of land in bodily experience and memory; ③ Fostering community capacities: the research process itself cultivates community autonomy.", "src": "King et al. (2023, pp.126–128)"}, {"text": "Elders as theorists: knowledge is transmitted through practice and story (Simpson, 2002). Through activities like returning to land, practising traditional harvesting, etc., countering settler colonialism, strengthening family bonds, supporting traditional governance structures and land economies.", "src": "Simpson (2002), cited in King et al. (2023, p.130)"}]}, {"id": 35, "author": "Tuck, E. & Yang, Y.K.", "year": "2012", "title": "Decolonization is not a metaphor. Decolonization: Indigeneity, Education & Society, 1(1).", "themes": ["indigenous", "crt"], "summary": "核心命题：去殖民化不是其他事物的隐喻，没有同义词，也没有等价物。批判将去殖民化稀释为一般社会正义话语（settler moves to innocence：六种）。定居殖民主义是一个结构（Wolfe），不是历史事件；土地归还（repatriation of Indigenous land and life）是去殖民化的实质内容，不是隐喻。强调可通约性伦理（ethic of incommensurability）：不同项目不能相互替代。", "keyArgs": [{"term": "定居殖民主义是结构（Wolfe）", "exp": "不是过去某个时间点发生的历史事件，而是持续运作的结构——come to stay。Triad结构：settler（定居者）/native（原住民）/slave（奴隶）三方位置截然不同，不可等同。Settlers are not immigrants：定居者来到是为了取代，而非为了参与原有社会。"}, {"term": "去殖民化等于土地归还", "exp": "Real decolonization means the repatriation of Indigenous land and life，不只是改变叙事/态度/课程/多样性指标。这是物质性的（material），不是比喻性的（metaphorical）。把去殖民化用作隐喻，实际上是settler moves to innocence的一种形式。"}, {"term": "六种Settler Moves to Innocence", "exp": "①Settler nativism（殖民者原住民化）；②Adoption fantasy（收养幻想）；③Colonial equivocation（殖民等同化）；④Conscientização（觉醒化，对Freire的批判）；⑤At risk-ing indigenous peoples（将原住民视为脆弱群体）；⑥Re-occupation and urban homesteading（重新占领，借用去殖民语言做别的事）。"}, {"term": "对Freire的批判", "exp": "Paulo Freire的解放教育没有原住民/定居者的结构区分；假定存在一个无辜的第三者；意识解放不自动等于土地归还。这对批判教育学有重要含义。"}, {"term": "可通约性伦理", "exp": "Ethic of incommensurability：去殖民化不能被稀释为一般社会正义、不能等同于decentering whiteness、不能被反种族主义或女性主义所代替。不同的解放项目有各自特定的内容，不可互相替代，这不是竞争而是各自的完整性。"}], "questions": ["去殖民化作为土地归还在非北美/非澳大利亚语境中（如中国、亚洲）如何理解？其核心逻辑是否可迁移？", "Freire的解放教育被批判忽视了settler-native的结构差异——是否意味着在原住民教育中，Freire的框架需要被根本性地修正？", "去殖民化与anti-colonialism（反殖民主义）的实质差异：前者要求土地归还，后者可能只是反对殖民体系——这个区分如何影响研究立场？"], "thinkers": ["Tuck", "Yang", "Wolfe", "Coulthard", "Fanon", "Smith", "Freire", "Said", "Blaut"], "method": "在研究写作中，检验：我是否在用去殖民化作为社会正义的通用标签？我的研究是否触及了土地关系和主权问题，还是只在话语层面运作？", "note": "", "related": ["Smith 2012", "Corntassel 2012", "Melamed 2015", "Ladson-Billings 1998", "Agbo & Grimwood 2024"], "quotes": [{"text": "Settler colonialism is a structure (Wolfe), not a historical event — come to stay. Triad structure: settler/native/slave — the three positions are fundamentally different and cannot be equated. Settlers are not immigrants: settlers come to replace, not to participate in the original society.", "src": "Wolfe, cited in Tuck & Yang (2012, p.6)"}, {"text": "Decolonisation = land repatriation: real decolonisation means the repatriation of Indigenous land and life — not just changing narratives/attitudes/curricula/diversity indicators. It is material, not metaphorical. Using decolonisation as a metaphor is itself a settler move to innocence.", "src": "Tuck & Yang (2012, pp.7–8)"}, {"text": "Six Settler Moves to Innocence: ① Settler nativism; ② Adoption fantasy; ③ Colonial equivocation; ④ Conscientização (critique of Freire); ⑤ At risk-ing Indigenous peoples; ⑥ Re-occupation and urban homesteading. Each allows settlers to claim decolonial sentiment while remaining structurally comfortable.", "src": "Tuck & Yang (2012, pp.9–16)"}, {"text": "Critique of Freire: Paulo Freire's liberatory education lacks the structural distinction between Indigenous/settler; assumes an innocent third party; consciousness liberation does not automatically equal land repatriation. This has important implications for critical pedagogy.", "src": "Tuck & Yang (2012, p.14)"}, {"text": "Ethic of incommensurability: decolonisation cannot be diluted into general social justice, cannot be equated with decentering whiteness, cannot be replaced by anti-racism or feminism. Different liberation projects have their own specific content — not competing but each integral.", "src": "Tuck & Yang (2012, p.21)"}]}, {"id": 36, "author": "Taylor, K-Y. (Ed.)", "year": "2017", "title": "How We Get Free: Black Feminism and the Combahee River Collective.", "themes": ["feminist", "crt"], "summary": "通过介绍和收录Combahee River Collective（CRC）1977年声明及相关访谈，展示Black feminism作为政治传统的历史根源和当代意义。核心：interlocking oppression（交织压迫）的综合分析，integrated analysis and practice。强调If Black women were free, it would mean everyone else would have to be free这一命题的政治逻辑：黑人女性位于所有主要压迫系统的交汇点，其自由是普遍自由的条件而非特殊诉求。", "keyArgs": [{"term": "If Black women were free...", "exp": "如果黑人女性获得自由，就意味着每个人都必须获得自由——因为黑人女性处于种族/性别/阶级/异性恋规范等所有主要压迫系统的交汇点。这不是身份政治的特殊诉求，而是对压迫系统的完整分析：要解放处于最多重压迫处的人，必须拆除所有压迫系统。"}, {"term": "Identity politics的原始意义", "exp": "为了我们自己（黑人女性）争自由，而非身份的碎片化政治。来自历史经验+运动经验+个人经验+结构性经济位置的共同产物，不是凭空建构的。与后来被学院改造后的identity politics（成为标签/话语）形成对比。"}, {"term": "Tokenism（象征性代表）", "exp": "机构中的黑人女性代表可能只是象征性地证明机构的包容性，而不改变权力结构。与Non-performativity（Ahmed）的逻辑一致：代表性的宣示掩盖了实质性不平等的持续。"}, {"term": "结构性经济限制", "exp": "当黑人女性处于极度经济脆弱时，可能依赖家庭内的父权结构以获得某种稳定感，因此不一定能挑战男性主导。这不是意识不足的问题，而是真实物质处境的约束——强调了物质条件对政治实践的制约。"}, {"term": "社会主义女性主义的立场", "exp": "Socialists：马克思对资本主义阶级关系的分析，在特定历史语境下具有启发性。但需要扩展马克思主义，使其足以解释黑人女性的特定经济位置——种族/性别/阶级不可被还原为单一维度。"}], "questions": ["Tokenism如何在机构中以包容形式运作，同时实质上强化了原有权力结构？如何设计制度机制来区分真正的代表性和象征性代表？", "Socialist feminism如何具体地扩展马克思主义以解释黑人女性的经济位置，而不只是简单叠加分析维度？", "If Black women were free的逻辑如何应用于其他语境（如中国少数民族女性、LGBTQ群体）？是否存在类似的最多重压迫交汇点？"], "thinkers": ["Combahee River Collective", "Davis", "Lorde", "Walker", "Truth", "Smith", "hooks"], "method": "研究压迫的交叉性时，从最多重压迫的位置出发进行分析，而非从中间位置添加差异。这提供了一种方法论原则：从边缘而非中心建构理论。", "note": "If Black women were free... 这句话在第一次读到时让我沉默了很久。", "related": ["hooks 1991", "Hesse-Biber 2007", "Crenshaw et al 1995", "Melamed 2015", "Valtchanov & Parry"], "quotes": [{"text": "Interlocking oppression: race, gender, heteronormativity, and class oppression analysed and practised together. Integrated analysis and practice. Black feminist politics: 'If Black women were free, it would mean everyone else would have to be free.'", "src": "Combahee River Collective (1977), cited in Taylor (2017, p.11)"}, {"text": "Identity politics in its original sense: fighting for freedom for ourselves (Black women) — not the fragmented politics of identity. A collective product of historical experience + movement experience + personal experience + structural economic position. Distinct from the later academicised identity politics (becoming labels/discourse).", "src": "Combahee River Collective (1977), cited in Taylor (2017, p.14)"}, {"text": "Structural difficulties: when many Black women are in extreme economic vulnerability, they may feel a father-dominant household structure at least brings some stability, so they may not dare/want to challenge male dominance. Not a question of insufficient consciousness, but of real material constraints.", "src": "Taylor (2017, p.23)"}, {"text": "Tokenism: Black women's representation in institutions may only symbolically prove the institution's inclusivity without changing power structures. Consistent with Non-performativity (Ahmed): the declaration of representation conceals the persistence of substantive inequality.", "src": "Taylor (2017, p.29)"}]}, {"id": 37, "author": "Changfoot, N., et al.", "year": "2022", "title": "Revisioning aging: Indigenous, crip and queer renderings. Journal of Aging Studies, 63.", "themes": ["queer", "indigenous", "crt"], "summary": "批判活跃老龄化（active aging）的biopedagogy（身体规训教育学）：其异性恋规范/能力主义/核心家庭的隐含假设将原住民/残障者/酷儿系统性地边缘化或宣判为无未来（Kafer, 2013）。通过原住民循环时间性/Cripped aging/Queer aging三种视角，提出多元老龄化叙事。Re-Vision Centre的affirmative approach to bodymind difference作为实践案例。", "keyArgs": [{"term": "活跃老龄化的Biopedagogy批判", "exp": "主流老龄化模型的隐含标准：active/sedentary; ability/disability; able-minded/dementia; independence/dependence——这些二元对立共同服务于异性恋/健体/健心/财务安全/繁衍延续的biopedagogy。原住民/残障者/酷儿被隐形或被宣判为无未来，被排除在成功老龄化的叙事之外。"}, {"term": "Cripped aging", "exp": "将crip（残障的自我命名再挪用）动词化为to crip：积极欲求残障社群；打断线性进步的straight time；承认身体差异的内在价值。Crip queer time（Rice et al., 2017）：多元/情感化/非线性，使被排除的身心进入未来想象。"}, {"term": "原住民循环时间性（Anishinaabe）", "exp": "Kwey（Anishinaabe女性）长者的story medicine（故事药）：展现循环时间/关系与社群的持续。以社群/与土地的内在连结/情感性具身经验/同步-循环时间性替代线性时间。代际与土地关系取代核心家庭/个人成就的衡量标准。"}, {"term": "反治愈时间（Kafer 2013）", "exp": "Curative time的反向摆位：主流老龄化政策以延缓衰退/维持功能为目标，这本身就是一种治愈逻辑（curative logic）。反治愈时间拒绝以能力恢复/功能维持为成功老龄化的标准，转而强调存在的尊严和多元时间性。"}, {"term": "多重关系网络替代核心家庭", "exp": "这些老龄化叙事抵抗成功老龄化的异性繁衍想象，不以伴侣-核心家庭为唯一轴心，而是位于多重关系网络与非核家庭景观中。时间作为连续-循环流；对健康/财富/核心家庭指标的拒斥与反抗性未来。"}], "questions": ["主流老龄化政策框架不承认原住民语境——如何重新设计成功老龄化的测量框架，以纳入关系性/循环时间/土地连结等维度？", "多重关系网络与非核家庭景观中的幸福（flourishing）如何被操作化为研究变量，而不被主流心理学量表所化约？", "Crip queer time与原住民循环时间之间的对话：有哪些共鸣和差异？这对建立跨差异的批判联盟意味着什么？"], "thinkers": ["Changfoot", "Kafer", "Rice", "Sandberg", "Marshall", "Russo"], "method": "在研究老龄化时，审查所使用的时间假设：是否默认了线性进步和功能维持的标准？如何纳入非线性/循环/关系性的时间视角？", "note": "", "related": ["Bailey et al 2023", "Halberstam 2005", "Hamrie & Fritsch 2019", "Valtchanov & Parry"], "quotes": [{"text": "Biopedagogy critique of active ageing: active/sedentary; ability/disability; able-minded/dementia; independence/dependence — these binaries serve the biopedagogy of hetero-reproduction/healthy body/financial security. Indigenous/disabled/queer people are rendered invisible or sentenced to 'no future'.", "src": "Kafer (2013), cited in Changfoot et al. (2022, p.4)"}, {"text": "Cripped ageing: to crip = actively desiring disabled community; interrupting the straight time of linear progress; acknowledging the intrinsic value of bodily difference. Crip queer time (Rice et al., 2017): plural/affective/non-linear, enabling excluded bodymind to enter the imagination of futures.", "src": "Rice et al. (2017), cited in Changfoot et al. (2022, p.7)"}, {"text": "Anishinaabe circular temporality: Kwey (Anishinaabe women) elders' story medicine — displaying circular time, relationships, and community continuity. Replacing linear time with community/inner connection to land/affective embodied experience/synchronous-circular temporality.", "src": "Changfoot et al. (2022, pp.9–10)"}, {"text": "Curative time (Kafer, 2013): mainstream ageing policy aims to delay decline/maintain function — this is itself a curative logic. Anti-curative time refuses to use ability restoration/function maintenance as the standard of successful ageing, emphasising instead the dignity of existence and plural temporality.", "src": "Kafer (2013), cited in Changfoot et al. (2022, p.11)"}]}, {"id": 38, "author": "Hamrie, A. & Fritsch, K.", "year": "2019", "title": "Crip technoscience manifesto. Catalyst: Feminism, Theory, Technoscience, 5(1).", "themes": ["crt", "leisure"], "summary": "提出Crip technoscience作为一个知识-行动框架：残障者及其盟友在日常生活/运动/学术场域中开展的knowing-making实践。把技术-科学专业权威转移到具有残障生活经验的人身上，系统性质疑医疗化/修复/治愈逻辑。四项核心承诺：互依（interdependence）/可达亲密性（access intimacy）/拆除修复-治愈逻辑/Disability justice框架。", "keyArgs": [{"term": "Crip的再挪用", "exp": "Crip是一个自我命名的再挪用（reclamation）：从污名性词语到抵抗能力主义的分析工具。能被crip化的斗争现场：hack/tinker/reclaim——不只是接受残障，而是主动欲求残障社群，拒绝以正常化为目标。"}, {"term": "Frictional access（带摩擦的可达性）", "exp": "把传统中性翻译式的无障碍转向群体共创的审美-政治实践。把无障碍/access看作带摩擦的/杂糅的/集体的实验过程，反对简化为合规清单。Critical crowdsourcing（批判性众包）：反对慈善式众包，转向政治性集体实践。"}, {"term": "Disability justice四原则", "exp": "反能力主义（anti-ableism）/反生产力主义（anti-productivity）/交叉性（intersectionality）/集体解放（collective liberation）+完整性（wholeness）。完整性的重新诠释：完整与破碎并非对立，可置于张力中；脱离资本主义生产力标准评估人的价值。"}, {"term": "互依（interdependence）", "exp": "残障者从被照料-被评估的对象转变为关系网络中的能动主体。Care不是从强者流向弱者的单向给予，而是相互依赖的网络实践。这对休闲研究中的照护/身体/能力讨论有直接含义。"}, {"term": "Crip cartography", "exp": "Mapping Access：绘制空间的可达性地图，作为批判性认识论实践——不只是提供信息，而是揭示空间权力关系，并产生新的集体行动基础。"}], "questions": ["在承认差异与避免被差异化排斥之间的悖论：我只有承认自己不同才能被平等对待，但承认不同又把我变成了需要特殊对待的他者——这个悖论有没有出路？", "泰国跨性别者的复杂处境：法律层面无法更改性别标记的歧视/性旅游业的经济压力/手术的经济动机——Crip框架如何处理这种交叉性？", "Crip technoscience与能力主义-资本主义之间的张力：在需要生产力的经济体系中，如何实践反生产力主义的价值？"], "thinkers": ["Hamrie", "Fritsch", "Berne", "Sins Invalid", "Kafer", "Meekosha", "Rice"], "method": "在研究残障/身体/照护时，把残障者视为知识-行动框架的主体，而非研究对象。分析空间/制度/政策的access结构：谁被包括，谁被排除，包括/排除的条件是什么？", "note": "", "related": ["Bailey et al 2023", "Changfoot et al 2022", "Valtchanov & Parry", "Lopez 2024"], "quotes": [{"text": "Crip is a self-naming reclamation — from a stigmatising word to an analytical tool resisting ableism. Crip as verb: hack/tinker/reclaim — not just accepting disability, but actively desiring disabled community, refusing normalisation as the goal.", "src": "Hamrie & Fritsch (2019, p.3)"}, {"text": "Frictional access (Carmen Papalia's Blind Field Shuttle): shifting from traditional neutral translation-style accessibility to group co-created aesthetic-political practice. Access as a friction-bearing/hybrid/collective experimental process — not reducible to a compliance checklist.", "src": "Hamrie & Fritsch (2019, p.8)"}, {"text": "Disability justice four principles: anti-ableism / anti-productivism / intersectionality / collective liberation + wholeness. Wholeness reinterpreted: wholeness and brokenness are not opposites but can be held in tension; evaluating human value detached from capitalist productivity standards.", "src": "Hamrie & Fritsch (2019, pp.10–11)"}, {"text": "Interdependence: disabled people transformed from objects of care-and-assessment to active subjects in relational networks. Care is not a one-way gift flowing from strong to weak, but a practice of mutual dependence in relational networks.", "src": "Hamrie & Fritsch (2019, p.14)"}]}]
+</script>
+<script>
+/* ════════════════ SHARED STATE ════════════════ */
+const THEMES={method:"方法论框架",indigenous:"原住民方法论",positivism:"实证主义",phenomenology:"现象学",constructionism:"社会建构主义",critical:"批判理论",feminist:"女性主义",crt:"批判种族理论",queer:"酷儿理论",poststructural:"后结构主义",materialism:"新唯物主义",tourism:"旅游/去殖民",leisure:"休闲研究",neuro:"神经科学"};
+const THEME_COLORS={method:"#3a5878",indigenous:"#3a7a4a",positivism:"#7a5820",phenomenology:"#3a7a72",constructionism:"#585858",critical:"#b85042",feminist:"#b85082",crt:"#8c4a5a",queer:"#6b5a8c",poststructural:"#5a4a7a",materialism:"#4a5a3a",tourism:"#3a6a6a",leisure:"#6a503a",neuro:"#4a8a5a"};
+let DATA=[],state={theme:"all",q:"",sort:"default",view:"grid"};
+let progress={},notes={},bookmarks={};
+function loadStorage(){try{progress=JSON.parse(localStorage.getItem("rec700_progress")||"{}");notes=JSON.parse(localStorage.getItem("rec700_notes")||"{}");bookmarks=JSON.parse(localStorage.getItem("rec700_bookmarks")||"{}")}catch(e){}}
+function saveProgress(){localStorage.setItem("rec700_progress",JSON.stringify(progress))}
+function saveNotes(){localStorage.setItem("rec700_notes",JSON.stringify(notes))}
+function saveBookmarks(){localStorage.setItem("rec700_bookmarks",JSON.stringify(bookmarks))}
+
+/* ════════════════ TABS ════════════════ */
+const panels={kb:"panel-kb",map:"panel-map",ai:"panel-ai",fc:"panel-fc"};
+let activeTab="kb",mapInited=false,fcInited=false;
+function switchTab(t,btn){
+  document.querySelectorAll(".nav-tab").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  Object.values(panels).forEach(p=>{const el=document.getElementById(p);if(el)el.classList.remove("active")});
+  document.getElementById(panels[t]).classList.add("active");
+  activeTab=t;
+  if(t==="map"&&!mapInited){initMap();mapInited=true;}
+  if(t==="fc"&&!fcInited){initFC();fcInited=true;}
+}
+
+/* ════════════════ KB: STATS & RENDER ════════════════ */
+function updateStats(){
+  const read=Object.values(progress).filter(v=>v===2).length;
+  const reading=Object.values(progress).filter(v=>v===1).length;
+  const bk=Object.values(bookmarks).filter(Boolean).length;
+  document.getElementById("sRead").textContent=read;
+  document.getElementById("sReading").textContent=reading;
+  document.getElementById("sBookmarked").textContent=bk;
+  const pct=DATA.length?Math.round(read/DATA.length*100):0;
+  document.getElementById("pPct").textContent=pct+"%";
+  document.getElementById("pFill").style.width=pct+"%";
+}
+function esc(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function highlight(text,q){
+  if(!q||!text)return esc(text||"");
+  const e2=q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  return esc(text).replace(new RegExp("("+e2+")","gi"),"<mark>$1</mark>");
+}
+function cycleSort(){
+  const orders=["default","author","year"],labels=["排序：默认 ↕","排序：作者 A-Z","排序：年份 ↑"];
+  const idx=orders.indexOf(state.sort);
+  state.sort=orders[(idx+1)%3];
+  document.getElementById("sortBtn").textContent=labels[(idx+1)%3];
+  render();
+}
+function toggleView(){
+  state.view=state.view==="grid"?"compact":"grid";
+  document.getElementById("viewBtn").textContent=state.view==="grid"?"紧凑视图":"卡片视图";
+  document.getElementById("grid").className=state.view==="compact"?"grid compact":"grid";
+  render();
+}
+function exportNotes(){
+  const lines=["# REC 700 个人笔记导出","导出时间："+new Date().toLocaleDateString("zh-CN"),"","---",""];
+  DATA.forEach(r=>{const n=notes[r.id];if(n&&n.trim()){lines.push("## "+r.author+" ("+r.year+")");lines.push("**"+r.title+"**");lines.push("");lines.push(n);lines.push("","---","");}});
+  const blob=new Blob([lines.join("\n")],{type:"text/markdown"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="REC700_笔记导出.md";a.click();
+}
+function render(){
+  const q=state.q.toLowerCase().trim();
+  let filtered=DATA.filter(r=>{
+    if(state.theme!=="all"&&!r.themes.includes(state.theme))return false;
+    if(!q)return true;
+    const s=[r.author,r.year,r.title,r.summary,r.note||"",r.method||"",(r.keyArgs||[]).map(c=>c.term+" "+c.exp).join(" "),(r.questions||[]).join(" "),(r.thinkers||[]).join(" "),(r.quotes||[]).map(c=>c.text+" "+c.src).join(" "),r.themes.map(t=>THEMES[t]||t).join(" ")].join(" ").toLowerCase();
+    return q.split(" ").every(w=>s.includes(w));
+  });
+  if(state.sort==="author")filtered.sort((a,b)=>a.author.localeCompare(b.author));
+  else if(state.sort==="year")filtered.sort((a,b)=>parseInt(a.year||0)-parseInt(b.year||0));
+  document.getElementById("rbar").textContent=(q||state.theme!=="all")?"找到 "+filtered.length+" 条结果":"共 "+DATA.length+" 篇阅读";
+  const grid=document.getElementById("grid");grid.innerHTML="";
+  if(!filtered.length){grid.innerHTML='<div class="empty"><div class="empty-icon">◎</div><p>未找到匹配结果</p></div>';return;}
+  filtered.forEach((r,i)=>{
+    const th=r.themes[0]||"method",p=progress[r.id]||0,bk=bookmarks[r.id]||false;
+    const sLabels=["未读","阅读中","已读"];
+    const tags=r.themes.map(t=>'<span class="tag tag-'+t+'">'+( THEMES[t]||t)+'</span>').join("");
+    const args=(r.keyArgs||[]).map(c=>'<li><b>'+esc(c.term)+'</b>'+esc(c.exp)+'</li>').join("");
+    const qs=(r.questions||[]).map(q=>'<li>'+esc(q)+'</li>').join("");
+    const thinkers=(r.thinkers||[]).map(t=>'<span class="thinker-tag">'+esc(t)+'</span>').join("");
+    const rel=(r.related||[]).map(n=>'<span class="related-tag" onclick="filterByRelated(\''+(n.replace(/'/g,"")).slice(0,20)+'\')">'+esc(n.length>22?n.slice(0,22)+"…":n)+'</span>').join("");
+    const noteVal=esc(notes[r.id]||"");
+    const quotesHtml=(r.quotes&&r.quotes.length)?'<div class="section-label" style="margin-top:12px">原文引用</div><ul class="quotes-list">'+r.quotes.map(q=>'<li class="quote-item"><div class="quote-text">'+esc(q.text)+'</div><div class="quote-src">— '+esc(q.src)+'</div></li>').join("")+'</ul>':"";
+    const card=document.createElement("div");
+    card.className="card";card.style.animationDelay=(i*.03)+"s";card.dataset.id=r.id;
+    card.addEventListener('click', function(e){if(compareMode&&!e.target.closest('.card-footer')&&!e.target.closest('.card-check')){cardCompareClick(e,r.id);}});
+    card.innerHTML=
+      '<div class="card-check"><input type="checkbox" onclick="cardCompareClick(event,'+r.id+')"></div><div class="card-top top-'+th+'"></div>'+
+      '<div class="card-main">'+
+        '<div class="card-meta"><div>'+
+          '<div class="card-author">'+esc(r.author)+'</div>'+
+          '<div class="card-year">'+esc(r.year)+'</div>'+
+          '<div class="card-title-text">'+esc(r.title)+'</div>'+
+        '</div><span class="status-badge status-'+p+'" onclick="cycleStatus(event,'+r.id+')">'+sLabels[p]+'</span></div>'+
+        '<div class="card-tags">'+tags+'</div>'+
+        '<div class="card-summary">'+highlight(r.summary,q)+'</div>'+
+      '</div>'+
+      '<div class="card-detail">'+
+        quotesHtml+
+        (args?'<div class="detail-sep"></div><div class="section-label">核心论点与概念</div><ul class="keyargs-list">'+args+'</ul>':"")+ 
+        (qs?'<div class="section-label" style="margin-top:12px">批判性问题</div><ul class="q-list">'+qs+'</ul>':"")+
+        (thinkers?'<div class="section-label" style="margin-top:12px">关键理论家</div><div class="thinkers-wrap">'+thinkers+'</div>':"")+
+        (r.method?'<div class="section-label" style="margin-top:12px">方法论启示</div><div class="method-box">'+esc(r.method)+'</div>':"")+
+        (rel?'<div class="section-label" style="margin-top:12px">相关阅读</div><div class="related-wrap">'+rel+'</div>':"")+
+        '<div style="margin-top:12px"><div class="section-label">个人笔记</div><div class="note-section"><textarea placeholder="记录你的想法、联系、延伸阅读…" onchange="saveNote('+r.id+',this.value)">'+noteVal+'</textarea><div class="note-save-indicator" id="si-'+r.id+'" style="opacity:0">已自动保存 ✓</div></div></div>'+
+        (r.note?'<div class="section-label" style="margin-top:8px">原始笔记摘录</div><div class="method-box" style="border-color:#5a4a2a;background:rgba(90,74,42,.08)">'+esc(r.note)+'</div>':"")+
+      '</div>'+
+      '<div class="card-footer">'+
+        '<button class="toggle-btn" onclick="toggleCard(this)"><span class="tl">展开详情</span><span class="toggle-arrow">▼</span></button>'+
+        '<button class="bookmark-btn'+( bk?" active":"")+'" onclick="toggleBookmark(event,'+r.id+')">'+( bk?"★":"☆")+'</button>'+
+      '</div>';
+    grid.appendChild(card);
+  });
+}
+function toggleCard(btn){const c=btn.closest(".card");c.classList.toggle("open");btn.querySelector(".tl").textContent=c.classList.contains("open")?"收起":"展开详情";}
+function cycleStatus(e,id){e.stopPropagation();progress[id]=((progress[id]||0)+1)%3;saveProgress();updateStats();const b=e.target;b.className="status-badge status-"+progress[id];b.textContent=["未读","阅读中","已读"][progress[id]];}
+function toggleBookmark(e,id){e.stopPropagation();bookmarks[id]=!bookmarks[id];saveBookmarks();updateStats();const b=e.target;b.classList.toggle("active",bookmarks[id]);b.textContent=bookmarks[id]?"★":"☆";}
+function saveNote(id,val){notes[id]=val;saveNotes();const ind=document.getElementById("si-"+id);if(ind){ind.style.opacity="1";setTimeout(()=>{ind.style.opacity="0"},2000);}}
+function filterByRelated(n){document.getElementById("srch").value=n;state.q=n;document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active"));document.querySelector('.pill[data-theme="all"]').classList.add("active");state.theme="all";render();}
+document.getElementById("srch").addEventListener("input",e=>{state.q=e.target.value;render();});
+document.querySelectorAll(".pill").forEach(p=>{p.addEventListener("click",()=>{document.querySelectorAll(".pill").forEach(x=>x.classList.remove("active"));p.classList.add("active");state.theme=p.dataset.theme;render();});});
+
+/* ════════════════ CONCEPT MAP ════════════════ */
+let simulation,mapFilter="all";
+function filterMapTheme(v){mapFilter=v;initMap();}
+function initMap(){
+  const svg=d3.select("#mapSvg");
+  svg.selectAll("*").remove();
+  const {width,height}=document.getElementById("mapSvg").getBoundingClientRect();
+  const W=width||900,H=height||600;
+  const filtered=mapFilter==="all"?DATA:DATA.filter(d=>d.themes.includes(mapFilter));
+  const idSet=new Set(filtered.map(d=>d.id));
+  const nodes=filtered.map(d=>({id:d.id,author:d.author,year:d.year,themes:d.themes,summary:(d.summary||"").slice(0,120)+"…",related:d.related||[]}));
+  const relatedMap={};
+  filtered.forEach(d=>{(d.related||[]).forEach(r=>{filtered.forEach(d2=>{if(d2.author&&r.startsWith(d2.author.split(",")[0])){relatedMap[d.id+"-"+d2.id]=true;}});});});
+  const links=[];
+  Object.keys(relatedMap).forEach(k=>{const[s,t]=k.split("-").map(Number);if(idSet.has(s)&&idSet.has(t))links.push({source:s,target:t});});
+  const linkCount={};nodes.forEach(n=>{linkCount[n.id]=0;});
+  links.forEach(l=>{linkCount[l.source]=( linkCount[l.source]||0)+1;linkCount[l.target]=(linkCount[l.target]||0)+1;});
+  const g=svg.append("g");
+  svg.call(d3.zoom().scaleExtent([.3,3]).on("zoom",e=>g.attr("transform",e.transform)));
+  const link=g.append("g").selectAll("line").data(links).join("line").attr("stroke","rgba(200,149,58,.15)").attr("stroke-width",1);
+  const node=g.append("g").selectAll("g").data(nodes).join("g").call(d3.drag().on("start",(e,d)=>{if(!e.active)simulation.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y;}).on("drag",(e,d)=>{d.fx=e.x;d.fy=e.y;}).on("end",(e,d)=>{if(!e.active)simulation.alphaTarget(0);d.fx=null;d.fy=null;}));
+  node.append("circle").attr("r",d=>10+( linkCount[d.id]||0)*2).attr("fill",d=>THEME_COLORS[d.themes[0]]||"#555").attr("opacity",.85).attr("stroke","rgba(255,255,255,.15)").attr("stroke-width",1);
+  node.append("text").text(d=>{const p=d.author.split(",")[0];return p.length>12?p.slice(0,10)+"…":p;}).attr("text-anchor","middle").attr("dy","0.35em").attr("font-size","9px").attr("fill","rgba(232,224,208,.85)").attr("pointer-events","none").attr("font-family","Noto Sans SC");
+  const tip=document.getElementById("mapTip");
+  node.on("mouseover",(e,d)=>{
+    document.getElementById("tipAuthor").textContent=d.author+" ("+d.year+")";
+    document.getElementById("tipSummary").textContent=d.summary;
+    const rect=document.getElementById("mapSvg").getBoundingClientRect();
+    const x=e.clientX-rect.left+12,y=e.clientY-rect.top+12;
+    tip.style.left=Math.min(x,W-280)+"px";tip.style.top=y+"px";tip.style.opacity="1";
+  }).on("mouseout",()=>{tip.style.opacity="0";});
+  simulation=d3.forceSimulation(nodes).force("link",d3.forceLink(links).id(d=>d.id).distance(90).strength(.4)).force("charge",d3.forceManyBody().strength(-180)).force("center",d3.forceCenter(W/2,H/2)).force("collision",d3.forceCollide().radius(d=>18+(linkCount[d.id]||0)*2)).on("tick",()=>{link.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y).attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);node.attr("transform",d=>`translate(${d.x},${d.y})`);});
+  const legendEl=document.getElementById("mapLegend");legendEl.innerHTML="";
+  const shown=new Set(filtered.flatMap(d=>d.themes));
+  Object.entries(THEME_COLORS).filter(([k])=>shown.has(k)).forEach(([k,v])=>{legendEl.innerHTML+=`<div class="legend-item"><div class="legend-dot" style="background:${v}"></div>${THEMES[k]||k}</div>`;});
+}
+
+/* ════════════════ AI Q&A ════════════════ */
+let aiHistory=[],aiLoading=false;
+function buildSystemPrompt(){
+  const readings=DATA.map(r=>`[${r.id}] ${r.author} (${r.year}) — "${r.title}"
+主题: ${r.themes.map(t=>THEMES[t]||t).join(", ")}
+摘要: ${r.summary}
+核心论点: ${(r.keyArgs||[]).slice(0,3).map(a=>a.term+": "+a.exp.slice(0,80)).join("; ")}
+关键引用: ${(r.quotes||[]).slice(0,2).map(q=>q.text.slice(0,100)).join(" | ")}`).join("\n\n");
+  return `你是一个专门研究 REC 700 课程（哲学社会研究方法论）的AI助手。以下是课程全部38篇阅读的详细笔记：
+
+${readings}
+
+你的任务：
+1. 回答关于这些阅读的问题，直接引用具体文献（用"作者(年份)"格式）
+2. 比较不同理论家的立场，指出共鸣和张力
+3. 帮助梳理概念脉络和论证结构
+4. 如果被要求起草论文段落，提供有引用的段落草稿
+5. 用中文回答，保留英文原文专业术语，必要时用括号注明中文翻译
+6. 回答要有学术深度，不要只是简单总结——要指出隐含的张力、假设和方法论含义
+
+回答格式：用清晰的段落，在需要引用时注明来源。`;
+}
+function useSuggestion(el){document.getElementById("aiInput").value=el.textContent;document.getElementById("aiInput").focus();}
+async function sendAI(){
+  const input=document.getElementById("aiInput");
+  const msg=input.value.trim();
+  if(!msg||aiLoading)return;
+  input.value="";autoResize(input);
+  const messagesEl=document.getElementById("aiMessages");
+  if(messagesEl.querySelector(".ai-welcome"))messagesEl.querySelector(".ai-welcome").remove();
+  const userDiv=document.createElement("div");
+  userDiv.className="ai-msg user";
+  userDiv.innerHTML='<div class="ai-avatar user">你</div><div class="ai-bubble user">'+esc(msg)+'</div>';
+  messagesEl.appendChild(userDiv);
+  const typingDiv=document.createElement("div");
+  typingDiv.className="ai-msg";
+  typingDiv.innerHTML='<div class="ai-avatar bot">✦</div><div class="ai-bubble bot"><div class="ai-typing"><span></span><span></span><span></span></div></div>';
+  messagesEl.appendChild(typingDiv);
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+  aiLoading=true;document.getElementById("aiSendBtn").disabled=true;
+  aiHistory.push({role:"user",content:msg});
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:buildSystemPrompt(),messages:aiHistory})});
+    const data=await res.json();
+    const reply=data.content?.map(c=>c.text||"").join("")||"抱歉，无法获取回答。";
+    aiHistory.push({role:"assistant",content:reply});
+    typingDiv.remove();
+    const botDiv=document.createElement("div");
+    botDiv.className="ai-msg";
+    botDiv.innerHTML='<div class="ai-avatar bot">✦</div><div class="ai-bubble bot">'+reply.replace(/\n/g,"<br>")+'</div>';
+    messagesEl.appendChild(botDiv);
+  }catch(e){typingDiv.remove();const errDiv=document.createElement("div");errDiv.className="ai-msg";errDiv.innerHTML='<div class="ai-avatar bot">✦</div><div class="ai-bubble bot">⚠ 连接出错，请稍后重试。</div>';messagesEl.appendChild(errDiv);}
+  aiLoading=false;document.getElementById("aiSendBtn").disabled=false;
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+}
+function aiKeydown(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAI();}}
+function autoResize(el){el.style.height="auto";el.style.height=Math.min(el.scrollHeight,120)+"px";}
+
+/* ════════════════ FLASHCARDS ════════════════ */
+let fcCards=[],fcIndex=0,fcFlipped=false,fcSeen={},fcMastered={},fcTheme="all";
+function initFC(){
+  buildFCThemeFilter();
+  buildFCCards();
+  renderFCDots();
+  showFC();
+}
+function buildFCThemeFilter(){
+  const f=document.getElementById("fcThemeFilter");
+  f.innerHTML="";
+  const allBtn=document.createElement("button");
+  allBtn.className="pill active";allBtn.dataset.fctheme="all";
+  allBtn.textContent="全部";allBtn.onclick=function(){setFCTheme(this,"all");};
+  f.appendChild(allBtn);
+  Object.entries(THEMES).forEach(function(entry){
+    const k=entry[0],v=entry[1];
+    const btn=document.createElement("button");
+    btn.className="pill";btn.dataset.fctheme=k;btn.textContent=v;
+    btn.onclick=function(){setFCTheme(this,k);};
+    f.appendChild(btn);
+  });
+}
+function setFCTheme(btn,t){
+  document.querySelectorAll("[data-fctheme]").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");fcTheme=t;buildFCCards();renderFCDots();showFC();
+}
+function buildFCCards(){
+  fcCards=fcTheme==="all"?[...DATA]:DATA.filter(d=>d.themes.includes(fcTheme));
+  fcIndex=Math.max(0,Math.min(fcIndex,fcCards.length-1));
+}
+function shuffleFC(){for(let i=fcCards.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcCards[i],fcCards[j]]=[fcCards[j],fcCards[i]];}fcIndex=0;showFC();}
+function resetFC(){fcSeen={};fcMastered={};renderFCDots();}
+function navFC(dir){
+  const wrap=document.getElementById("fcWrap");
+  if(wrap.classList.contains("flipped")){wrap.classList.remove("flipped");fcFlipped=false;setTimeout(()=>{fcIndex=(fcIndex+dir+fcCards.length)%fcCards.length;showFC();},250);}
+  else{fcIndex=(fcIndex+dir+fcCards.length)%fcCards.length;showFC();}
+}
+function flipFC(){
+  const wrap=document.getElementById("fcWrap");
+  wrap.classList.toggle("flipped");
+  fcFlipped=!fcFlipped;
+  const r=fcCards[fcIndex];
+  if(fcFlipped&&r&&!fcSeen[r.id]&&!fcMastered[r.id]){fcSeen[r.id]=true;renderFCDots();}
+  document.getElementById("fcHint").textContent=fcFlipped?"点击翻回正面 ←":"点击翻面 →";
+}
+function markFC(type){
+  const r=fcCards[fcIndex];if(!r)return;
+  if(type==="mastered"){fcMastered[r.id]=true;delete fcSeen[r.id];}
+  else{fcSeen[r.id]=true;delete fcMastered[r.id];}
+  renderFCDots();
+  setTimeout(()=>navFC(1),300);
+}
+function showFC(){
+  if(!fcCards.length){document.getElementById("fcStage").innerHTML='<div class="fc-no-cards">该主题暂无卡片</div>';return;}
+  const r=fcCards[fcIndex];if(!r)return;
+  const th=r.themes[0]||"method";
+  const col=THEME_COLORS[th]||"#555";
+  document.getElementById("fcAccent").style.background=`linear-gradient(90deg,${col},transparent)`;
+  document.getElementById("fcAccentBack").style.background=`linear-gradient(90deg,${col},transparent)`;
+  document.getElementById("fcYear").textContent=r.year;
+  document.getElementById("fcAuthor").textContent=r.author;
+  document.getElementById("fcTitle").textContent=r.title;
+  document.getElementById("fcTags").innerHTML=r.themes.map(t=>'<span class="tag tag-'+t+'">'+( THEMES[t]||t)+'</span>').join("");
+  const arg=(r.keyArgs||[])[0];
+  if(arg){document.getElementById("fcArg").textContent=arg.term;document.getElementById("fcExp").textContent=arg.exp;}
+  const q=(r.quotes||[])[0];
+  const qEl=document.getElementById("fcQuote");
+  if(q){qEl.innerHTML='<div class="quote-text">'+esc(q.text.slice(0,200))+'</div><div class="fc-quote-src">— '+esc(q.src)+'</div>';qEl.style.display="block";}
+  else{qEl.style.display="none";}
+  document.getElementById("fcCounter").textContent=(fcIndex+1)+" / "+fcCards.length;
+  document.getElementById("fcProgress").style.width=((fcIndex+1)/fcCards.length*100)+"%";
+  document.getElementById("fcPrev").disabled=fcCards.length<=1;
+  document.getElementById("fcNext").disabled=fcCards.length<=1;
+  document.getElementById("fcHint").textContent="点击翻面 →";
+  if(document.getElementById("fcWrap").classList.contains("flipped")){document.getElementById("fcWrap").classList.remove("flipped");fcFlipped=false;}
+}
+function renderFCDots(){
+  const all=fcTheme==="all"?DATA:DATA.filter(d=>d.themes.includes(fcTheme));
+  const dots=document.getElementById("fcDots");
+  const seen=all.filter(d=>fcSeen[d.id]).length,mastered=all.filter(d=>fcMastered[d.id]).length;
+  document.getElementById("fcMeta").textContent=`共 ${all.length} 张 · 已翻看 ${seen} · 已掌握 ${mastered}`;
+  dots.innerHTML=all.map(d=>'<div class="fc-dot'+( fcMastered[d.id]?" mastered":fcSeen[d.id]?" seen":"")+'" title="'+esc(d.author)+'"></div>').join("");
+}
+
+
+/* ════════════════ MAP VIEW TOGGLE ════════════════ */
+function showMapView(v){
+  document.querySelectorAll(".tension-toggle-btn").forEach(b=>b.classList.remove("active"));
+  document.getElementById("mapToolbar").style.display=v==="map"?"flex":"none";
+  document.querySelector(".map-container").classList.toggle("active",v==="map");
+  document.getElementById("tensionPanel").classList.toggle("active",v==="tension");
+  document.getElementById("matrixPanel").classList.toggle("active",v==="matrix");
+  if(v==="map"){document.getElementById("btnShowMap").classList.add("active");if(!mapInited){initMap();mapInited=true;}}
+  else if(v==="tension")document.getElementById("btnShowTension").classList.add("active");
+  else document.getElementById("btnShowMatrix").classList.add("active");
+}
+// init state
+document.addEventListener("DOMContentLoaded",()=>{
+  document.querySelector(".map-container").classList.add("active");
+  document.getElementById("mapToolbar").style.display="flex";
+});
+
+/* ════════════════ COMPARE WORKSHOP ════════════════ */
+let compareSet=new Set(),compareMode=false;
+function toggleCompareMode(){
+  compareMode=!compareMode;
+  const btn=document.getElementById("compareModeBtn");
+  btn.classList.toggle("on",compareMode);
+  btn.textContent=compareMode?"✓ 比较模式 ON":"⇄ 比较模式";
+  document.querySelectorAll(".card").forEach(c=>{
+    c.classList.toggle("compare-mode",compareMode);
+    if(!compareMode){c.classList.remove("selected");c.querySelector(".card-check input").checked=false;}
+  });
+  if(!compareMode){compareSet.clear();updateDock();}
+}
+function cardCompareClick(e,id){
+  if(!compareMode)return;
+  e.stopPropagation();
+  if(compareSet.has(id)){compareSet.delete(id);}
+  else{if(compareSet.size>=5)return;compareSet.add(id);}
+  const card=document.querySelector('.card[data-id="'+id+'"]');
+  if(card){card.classList.toggle("selected",compareSet.has(id));const cb=card.querySelector(".card-check input");if(cb)cb.checked=compareSet.has(id);}
+  updateDock();
+}
+function updateDock(){
+  const dock=document.getElementById("compareDock");
+  dock.classList.toggle("visible",compareSet.size>0);
+  const chips=document.getElementById("compareChips");chips.innerHTML="";
+  compareSet.forEach(id=>{
+    const r=DATA.find(x=>x.id===id);if(!r)return;
+    const chip=document.createElement("div");chip.className="compare-chip";
+    chip.innerHTML=r.author.split(",")[0]+'<button onclick="removeCompare('+id+')">×</button>';
+    chips.appendChild(chip);
+  });
+}
+function removeCompare(id){
+  compareSet.delete(id);
+  const card=document.querySelector('.card[data-id="'+id+'"]');
+  if(card){card.classList.remove("selected");const cb=card.querySelector(".card-check input");if(cb)cb.checked=false;}
+  updateDock();
+}
+function clearCompare(){compareSet.clear();document.querySelectorAll(".card.selected").forEach(c=>{c.classList.remove("selected");const cb=c.querySelector(".card-check input");if(cb)cb.checked=false;});updateDock();}
+function openCompare(mode){
+  const overlay=document.getElementById("compareOverlay");overlay.classList.add("open");
+  const body=document.getElementById("compareBody");body.innerHTML="";
+  const selected=DATA.filter(r=>compareSet.has(r.id));
+  if(selected.length===0)return;
+  const cols=document.createElement("div");cols.className="compare-cols";
+  selected.forEach(r=>{
+    const col=document.createElement("div");col.className="compare-col";
+    const th=r.themes[0]||"method";
+    const topColor={"method":"#3a5878","indigenous":"#3a7a4a","positivism":"#7a5820","phenomenology":"#3a7a72","constructionism":"#585858","critical":"#b85042","feminist":"#b85082","crt":"#8c4a5a","queer":"#6b5a8c","poststructural":"#5a4a7a","materialism":"#4a5a3a","tourism":"#3a6a6a","leisure":"#6a503a","neuro":"#4a8a5a"}[th]||"#555";
+    col.innerHTML=
+      '<div style="height:3px;background:linear-gradient(90deg,'+topColor+',transparent)"></div>'+
+      '<div class="compare-col-head"><div class="compare-col-author">'+esc(r.author)+'</div><div class="compare-col-year">'+esc(r.year)+'</div></div>'+
+      '<div class="compare-col-body">'+
+        '<div class="compare-col-section">核心摘要</div>'+
+        '<p style="margin-bottom:10px">'+esc(r.summary)+'</p>'+
+        '<div class="compare-col-section">核心论点</div>'+
+        (r.keyArgs||[]).map(a=>'<div class="compare-col-arg"><b>'+esc(a.term)+'</b>'+esc(a.exp)+'</div>').join("")+
+        (r.quotes&&r.quotes.length?'<div class="compare-col-section">关键引用</div>'+(r.quotes||[]).slice(0,2).map(q=>'<div class="quote-item" style="margin-bottom:8px"><div class="quote-text">'+esc(q.text)+'</div><div class="quote-src">— '+esc(q.src)+'</div></div>').join(""):'')+ 
+        (r.method?'<div class="compare-col-section">方法论启示</div><div class="method-box">'+esc(r.method)+'</div>':'')+
+      '</div>';
+    cols.appendChild(col);
+  });
+  // AI synthesis panel
+  const aiPanel=document.createElement("div");aiPanel.className="compare-ai-panel";
+  aiPanel.innerHTML=
+    '<div class="compare-ai-head">✦ AI 综合助手</div>'+
+    '<div class="compare-ai-templates">'+
+      '<div class="compare-ai-tpl" onclick="setComparePrompt(this)">综合这几篇文献的核心论点，写一段有引用的学术段落</div>'+
+      '<div class="compare-ai-tpl" onclick="setComparePrompt(this)">比较这些作者的立场差异与共同点</div>'+
+      '<div class="compare-ai-tpl" onclick="setComparePrompt(this)">这几篇文献在方法论上有什么张力？</div>'+
+      '<div class="compare-ai-tpl" onclick="setComparePrompt(this)">如何用这几篇文献支撑一个关于【交叉性/去殖民/关系性】的论点？</div>'+
+      '<div class="compare-ai-tpl" onclick="setComparePrompt(this)">这几篇文献之间有什么显性或隐性的批判关系？</div>'+
+    '</div>'+
+    '<div class="compare-ai-messages" id="compareAIMessages"></div>'+
+    '<div class="compare-ai-bar">'+
+      '<input type="text" id="compareAIInput" placeholder="输入你的问题…" onkeydown="if(event.key===\'Enter\')sendCompareAI()">'+
+      '<button onclick="sendCompareAI()">▶</button>'+
+    '</div>';
+  body.appendChild(cols);body.appendChild(aiPanel);
+  if(mode==="ai"){
+    const defaultQ="请综合以下"+selected.length+"篇文献的核心论点，写一段有引用的学术段落（200字左右）";
+    document.getElementById("compareAIInput").value=defaultQ;
+    setTimeout(sendCompareAI,300);
+  }
+}
+function setComparePrompt(el){document.getElementById("compareAIInput").value=el.textContent;document.getElementById("compareAIInput").focus();}
+async function sendCompareAI(){
+  const input=document.getElementById("compareAIInput");const msg=input.value.trim();if(!msg)return;
+  const messagesEl=document.getElementById("compareAIMessages");input.value="";
+  const selected=DATA.filter(r=>compareSet.has(r.id));
+  const context=selected.map(r=>`[${r.author} (${r.year})]\n摘要: ${r.summary}\n核心论点: ${(r.keyArgs||[]).slice(0,3).map(a=>a.term+": "+a.exp).join("; ")}\n引用: ${(r.quotes||[]).slice(0,1).map(q=>q.text).join("")}`).join("\n\n---\n\n");
+  const userDiv=document.createElement("div");userDiv.className="compare-ai-msg user";userDiv.textContent=msg;messagesEl.appendChild(userDiv);
+  const loadDiv=document.createElement("div");loadDiv.className="compare-ai-msg bot";loadDiv.innerHTML='<div class="ai-typing"><span></span><span></span><span></span></div>';messagesEl.appendChild(loadDiv);
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:"你是一位学术写作助手，专注于 REC 700 课程。以下是用户选中的文献内容：\n\n"+context+"\n\n任务：回答用户的问题，提供有具体文献引用（格式：作者，年份）的学术段落或分析。用中文回答，保留关键英文术语。",messages:[{role:"user",content:msg}]})});
+    const data=await res.json();
+    const reply=data.content?.map(c=>c.text||"").join("")||"无法获取回答。";
+    loadDiv.innerHTML=reply.replace(/\n/g,"<br>");
+  }catch(e){loadDiv.textContent="⚠ 连接出错，请重试。";}
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+}
+function closeCompare(){document.getElementById("compareOverlay").classList.remove("open");}
+
+/* ════════════════ INIT ════════════════ */
+loadStorage();
+try{DATA=JSON.parse(document.getElementById("jdata").textContent);}catch(e){console.error(e);}
+document.getElementById("sTotal").textContent=DATA.length;
+updateStats();render();
+</script>
+
+<!-- COMPARE DOCK -->
+<div class="compare-dock" id="compareDock">
+  <span class="compare-dock-label">比较台</span>
+  <div class="compare-chips" id="compareChips"></div>
+  <button class="dock-btn secondary" onclick="clearCompare()">清空</button>
+  <button class="dock-btn secondary" onclick="openCompare('side')">⇄ 并排对比</button>
+  <button class="dock-btn primary" onclick="openCompare('ai')">✦ AI 综合写段落</button>
+</div>
+
+<!-- COMPARE OVERLAY -->
+<div class="compare-overlay" id="compareOverlay">
+  <div class="compare-overlay-head">
+    <h2>📄 文献比较工坊</h2>
+    <button class="dock-btn secondary" onclick="openCompare('ai')" id="aiSynthBtn">✦ AI 综合</button>
+    <button class="dock-btn secondary" onclick="openCompare('side')" id="sideBtn">⇄ 并排</button>
+    <button class="compare-close" onclick="closeCompare()">×</button>
+  </div>
+  <div class="compare-body" id="compareBody">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+</body>
+</html>
